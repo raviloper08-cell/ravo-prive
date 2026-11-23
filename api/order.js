@@ -188,8 +188,8 @@ export default async function handler(req, res) {
       phone: phone.trim(),
       items: orderItems,
       total_amount: total,
-      status: "new",
-      payment_status: "pending"
+     status: "pending",
+payment_status: "pending"
     };
 
     const saveResponse = await fetch(
