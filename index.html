@@ -50,11 +50,15 @@ nav button.active{color:#d4af37}
 .detail-feature{padding:13px 0;border-bottom:1px solid #29251b;color:#ddd;font-size:14px}
 .add{width:100%;padding:16px;background:#d4af37;color:#111;border:0;border-radius:9px;font-weight:800;letter-spacing:1px;margin-top:22px}
 .gift{color:#d4af37}
-#cartPanel{display:none;position:fixed;inset:0;background:#0b0b0b;z-index:10;padding:25px 18px;overflow:auto}
+#cartPanel,#checkoutPanel{display:none;position:fixed;inset:0;background:#0b0b0b;z-index:10;padding:25px 18px;overflow:auto}
 .close{float:right;background:none;color:#d4af37;border:0;font-size:27px}
-.cartItem{padding:15px 0;border-bottom:1px solid #333;font-size:14px}
+.cartItem{padding:15px 0;border-bottom:1px solid #333;font-size:14px;overflow:hidden}
 .cartItem button{float:right;background:none;color:#d4af37;border:0}
 .cartTotal{font-size:21px;margin:25px 0}
+.checkout-input{display:block;width:100%;padding:16px;margin:13px 0;background:#151515;border:1px solid #39332a;border-radius:9px;color:white;font-size:15px;outline:none}
+.checkout-note{font-size:12px;color:#999;line-height:1.6;margin-top:15px}
+#checkoutMessage{font-size:13px;color:#d4af37;line-height:1.5;margin-top:14px}
+.add:disabled{opacity:.5;cursor:wait}
 </style>
 </head>
 <body>
@@ -91,7 +95,23 @@ nav button.active{color:#d4af37}
  <h2 style="font-family:Georgia,serif;font-weight:400">Моя корзина</h2>
  <div id="cartItems"></div>
  <div class="cartTotal" id="total"></div>
- <button class="add" onclick="alert('Следующим этапом подключим оформление заказа и Telegram.')">ОФОРМИТЬ ЗАКАЗ</button>
+ <button class="add" onclick="openCheckout()">ОФОРМИТЬ ЗАКАЗ</button>
+</div>
+
+<div id="checkoutPanel">
+ <button class="close" onclick="closeCheckout()">×</button>
+ <h2 style="font-family:Georgia,serif;font-weight:400">Оформление заказа</h2>
+ <p style="color:#aaa;font-size:13px;line-height:1.6">Оставь свои контакты. Мы свяжемся с тобой для подтверждения заказа.</p>
+
+ <form id="checkoutForm" onsubmit="submitCheckout(event)">
+  <input class="checkout-input" id="customerName" type="text" placeholder="Твоё имя" required maxlength="80" autocomplete="name">
+  <input class="checkout-input" id="customerPhone" type="tel" placeholder="Номер телефона" required maxlength="25" autocomplete="tel">
+  <div class="cartTotal" id="checkoutTotal"></div>
+  <button class="add" id="submitOrder" type="submit">ОТПРАВИТЬ ЗАКАЗ</button>
+ </form>
+
+ <div id="checkoutMessage"></div>
+ <div class="checkout-note">После отправки заказа мы свяжемся с тобой для уточнения деталей.</div>
 </div>
 
 <script>
@@ -241,6 +261,91 @@ function removeItem(i){
 
 function closeCart(){
  document.getElementById("cartPanel").style.display="none";
+}
+
+function openCheckout(){
+ if(!cart.length){
+  alert("Сначала добавь товар в корзину.");
+  return;
+ }
+ document.getElementById("checkoutTotal").textContent=
+  "Итого: "+money(cart.reduce((s,p)=>s+Number(p.price||0),0));
+ document.getElementById("checkoutMessage").textContent="";
+ document.getElementById("cartPanel").style.display="none";
+ document.getElementById("checkoutPanel").style.display="block";
+}
+
+function closeCheckout(){
+ document.getElementById("checkoutPanel").style.display="none";
+}
+
+async function submitCheckout(event){
+ event.preventDefault();
+
+ if(!cart.length){
+  alert("Корзина пуста.");
+  closeCheckout();
+  return;
+ }
+
+ const button=document.getElementById("submitOrder");
+ const message=document.getElementById("checkoutMessage");
+ const name=document.getElementById("customerName").value.trim();
+ const phone=document.getElementById("customerPhone").value.trim();
+
+ if(!name||!phone){
+  message.textContent="Заполни имя и номер телефона.";
+  return;
+ }
+
+ const quantities={};
+ cart.forEach(p=>{
+  const id=String(p.id);
+  quantities[id]=(quantities[id]||0)+1;
+ });
+
+ const items=Object.entries(quantities).map(([id,quantity])=>({
+  id,quantity
+ }));
+
+ button.disabled=true;
+ button.textContent="ОТПРАВЛЯЕМ...";
+ message.textContent="Отправляем заказ...";
+
+ try{
+  const response=await fetch("/api/order",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({name,phone,items})
+  });
+
+  let result={};
+  try{result=await response.json()}catch(e){}
+
+  if(!response.ok||!result.success){
+   throw new Error(result.error||"Не удалось отправить заказ. Попробуй ещё раз.");
+  }
+
+  cart=[];
+  document.getElementById("count").textContent="0";
+  updateCart();
+  document.getElementById("checkoutForm").reset();
+  message.textContent="Заказ успешно отправлен! Скоро мы свяжемся с тобой.";
+  button.textContent="ЗАКАЗ ОТПРАВЛЕН ✓";
+  button.disabled=true;
+
+  setTimeout(()=>{
+   closeCheckout();
+   button.disabled=false;
+   button.textContent="ОТПРАВИТЬ ЗАКАЗ";
+  },2200);
+
+ }catch(error){
+  console.error(error);
+  message.textContent=error.message||"Ошибка отправки. Попробуй ещё раз.";
+  button.disabled=false;
+  button.textContent="ПОПРОБОВАТЬ СНОВА";
+ }
 }
 
 loadProducts();
