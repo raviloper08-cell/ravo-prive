@@ -158,7 +158,7 @@ export default async function handler(req, res) {
     });
 
     const profileResponse = await fetch(
-      `${supabaseUrl}/rest/v1/profiles?telegram_id=eq.${encodeURIComponent(telegramId)}&select=id,bonus_balance,subscription_plan`,
+      `${supabaseUrl}/rest/v1/profiles?telegram_id=eq.${encodeURIComponent(telegramId)}&select=id,auth_user_id,bonus_balance,subscription_plan`,
       {
         headers: {
           apikey: serviceKey,
