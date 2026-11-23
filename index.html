@@ -3,119 +3,247 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>RAVO PRIVÉ</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#0b0b0b;color:#f5f1e8;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;padding-bottom:90px}
-header{padding:25px 20px 18px;text-align:center;border-bottom:1px solid #29251b}
-.logo{font-family:Georgia,serif;font-size:29px;letter-spacing:4px;color:#d4af37}
+body{margin:0;background:#0b0b0b;color:#f5f1e8;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;padding-bottom:85px}
+button{font-family:inherit;cursor:pointer}
+header{text-align:center;padding:24px 15px 18px;border-bottom:1px solid #29251b}
+.logo{font:29px Georgia,serif;letter-spacing:4px;color:#d4af37}
 .sub{font-size:9px;letter-spacing:4px;color:#aaa;margin-top:7px}
-.hero{margin:18px;padding:28px 20px;background:linear-gradient(135deg,#242017,#0e0e0e 65%);border:1px solid #5b4923;border-radius:15px}
-.hero small{color:#d4af37;letter-spacing:3px}
-.hero h1{font-family:Georgia,serif;font-size:30px;font-weight:400;margin:14px 0}
+.hero{margin:18px;padding:27px 20px;background:linear-gradient(135deg,#292216,#101010 75%);border:1px solid #594820;border-radius:14px}
+.hero small{color:#d4af37;letter-spacing:3px;font-size:10px}
+.hero h1{font:30px Georgia,serif;font-weight:400;line-height:1.2}
 .hero p{color:#aaa;font-size:13px;line-height:1.6}
 .section{padding:8px 18px}
-.section h2{font-family:Georgia,serif;font-weight:400;font-size:23px}
-.search{margin:10px 18px 17px}
+.section h2{font:23px Georgia,serif;font-weight:400}
+.search{padding:0 18px 15px}
 .search input{width:100%;padding:15px;border:1px solid #39332a;border-radius:10px;background:#151515;color:white;font-size:14px;outline:none}
-.categories{display:flex;gap:9px;overflow:auto;padding:0 18px 15px;scrollbar-width:none}
+.categories{display:flex;gap:9px;overflow:auto;padding:0 18px 17px;scrollbar-width:none}
 .categories button{white-space:nowrap;border:1px solid #4c4025;background:#151515;color:#d4af37;border-radius:30px;padding:10px 15px}
 .categories button.active{background:#d4af37;color:#111}
 .products{display:grid;grid-template-columns:1fr 1fr;gap:13px;padding:0 15px}
-.product{background:#151515;border:1px solid #29251f;border-radius:12px;overflow:hidden}
-.product img{width:100%;aspect-ratio:1/1;object-fit:cover;background:#222}
+.product{background:#151515;border:1px solid #29251f;border-radius:12px;overflow:hidden;cursor:pointer}
+.product img{width:100%;aspect-ratio:1/1;object-fit:cover;background:#191713;display:block}
 .info{padding:11px}
 .brand{font-size:9px;color:#d4af37;letter-spacing:2px}
-.name{font-family:Georgia,serif;font-size:16px;margin:7px 0;min-height:38px}
-.price{font-size:16px;font-weight:600}
-.add{width:100%;margin-top:11px;padding:11px 5px;border:0;border-radius:7px;background:#d4af37;color:#111;font-weight:700}
-.empty{grid-column:1/-1;text-align:center;color:#999;padding:25px}
-nav{position:fixed;bottom:0;left:0;right:0;background:#111;border-top:1px solid #39332a;display:flex;justify-content:space-around;padding:13px 5px calc(13px + env(safe-area-inset-bottom));z-index:5}
+.name{font:16px Georgia,serif;margin:7px 0;min-height:38px}
+.price{font-size:16px;font-weight:700}
+.old{font-size:12px;color:#888;text-decoration:line-through;margin-left:6px}
+.status,.empty{grid-column:1/-1;text-align:center;color:#999;padding:30px 15px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#111;border-top:1px solid #39332a;display:flex;justify-content:space-around;padding:12px 5px calc(12px + env(safe-area-inset-bottom));z-index:5}
 nav button{background:none;border:0;color:#aaa;font-size:12px}
-nav button span{display:block;font-size:20px;margin-bottom:4px}
+nav button span{display:block;font-size:21px;margin-bottom:4px}
 nav button.active{color:#d4af37}
+.page{display:none}
+.page.active{display:block}
+.back{display:inline-flex;align-items:center;gap:8px;color:#d4af37;background:none;border:0;padding:18px;font-size:14px}
+.detail-image{width:calc(100% - 36px);margin:0 18px;border-radius:13px;aspect-ratio:1/1;object-fit:cover;background:#191713}
+.detail-content{padding:20px}
+.detail-brand{color:#d4af37;font-size:11px;letter-spacing:3px}
+.detail-title{font:30px Georgia,serif;font-weight:400;margin:12px 0}
+.detail-price{font-size:25px;font-weight:700;margin:12px 0}
+.detail-old{font-size:15px;color:#888;text-decoration:line-through;margin-left:8px}
+.detail-description{font-size:14px;color:#bbb;line-height:1.7;margin:20px 0}
+.detail-label{color:#d4af37;font-size:11px;letter-spacing:2px;margin-top:24px}
+.detail-feature{padding:13px 0;border-bottom:1px solid #29251b;color:#ddd;font-size:14px}
+.add{width:100%;padding:16px;background:#d4af37;color:#111;border:0;border-radius:9px;font-weight:800;letter-spacing:1px;margin-top:22px}
+.gift{color:#d4af37}
 #cartPanel{display:none;position:fixed;inset:0;background:#0b0b0b;z-index:10;padding:25px 18px;overflow:auto}
-.cartItem{padding:14px 0;border-bottom:1px solid #333}
-.cartTotal{font-size:20px;margin:25px 0}
-.checkout{width:100%;padding:15px;background:#d4af37;color:#111;border:0;border-radius:9px;font-weight:bold}
-.close{float:right;background:none;color:#d4af37;border:0;font-size:25px}
+.close{float:right;background:none;color:#d4af37;border:0;font-size:27px}
+.cartItem{padding:15px 0;border-bottom:1px solid #333;font-size:14px}
+.cartItem button{float:right;background:none;color:#d4af37;border:0}
+.cartTotal{font-size:21px;margin:25px 0}
 </style>
 </head>
 <body>
+
 <header>
-<div class="logo">RAVO PRIVÉ</div>
-<div class="sub">THE WORLD OF FRAGRANCES</div>
+ <div class="logo">RAVO PRIVÉ</div>
+ <div class="sub">THE WORLD OF FRAGRANCES</div>
 </header>
 
-<section class="hero">
-<small>DISCOVER YOUR SIGNATURE</small>
-<h1>Твой аромат.<br>Твои правила.</h1>
-<p>Открой мир парфюмерии вместе с RAVO PRIVÉ.</p>
-</section>
+<main id="catalogPage" class="page active">
+ <section class="hero">
+  <small>DISCOVER YOUR SIGNATURE</small>
+  <h1>Твой аромат.<br>Твои правила.</h1>
+  <p>Открой мир парфюмерии вместе с RAVO PRIVÉ.</p>
+ </section>
+ <div class="section"><h2>Каталог ароматов</h2></div>
+ <div class="search"><input id="search" placeholder="⌕  Найти аромат..." oninput="render()"></div>
+ <div class="categories" id="categories"></div>
+ <div class="products" id="products"><div class="status">Загружаем каталог...</div></div>
+</main>
 
-<div class="section"><h2>Каталог ароматов</h2></div>
-<div class="search"><input id="search" placeholder="⌕  Найти аромат..." oninput="render()"></div>
-<div class="categories">
-<button class="active" onclick="filter('Все',this)">Все</button>
-<button onclick="filter('Мужские',this)">Мужские</button>
-<button onclick="filter('Женские',this)">Женские</button>
-<button onclick="filter('Унисекс',this)">Унисекс</button>
-</div>
-<div class="products" id="products"></div>
+<main id="detailPage" class="page">
+ <button class="back" onclick="showCatalog()">← Назад в каталог</button>
+ <div id="detailContent"></div>
+</main>
 
 <nav>
-<button class="active" onclick="window.scrollTo({top:0,behavior:'smooth'})"><span>⌂</span>Главная</button>
-<button onclick="openCart()"><span>♧</span>Корзина <b id="count">0</b></button>
+ <button class="active" id="homeTab" onclick="showCatalog()"><span>⌂</span>Каталог</button>
+ <button onclick="openCart()"><span>♧</span>Корзина <b id="count">0</b></button>
 </nav>
 
 <div id="cartPanel">
-<button class="close" onclick="closeCart()">×</button>
-<h2 style="font-family:Georgia,serif;font-weight:400">Моя корзина</h2>
-<div id="cartItems"></div>
-<div class="cartTotal" id="total"></div>
-<button class="checkout" onclick="alert('Скоро подключим оформление заказа!')">ОФОРМИТЬ ЗАКАЗ</button>
+ <button class="close" onclick="closeCart()">×</button>
+ <h2 style="font-family:Georgia,serif;font-weight:400">Моя корзина</h2>
+ <div id="cartItems"></div>
+ <div class="cartTotal" id="total"></div>
+ <button class="add" onclick="alert('Следующим этапом подключим оформление заказа и Telegram.')">ОФОРМИТЬ ЗАКАЗ</button>
 </div>
 
 <script>
-const products=[
-{id:1,name:"Oud Mood",brand:"LATTAFA",price:1299,category:"Унисекс",image:"https://placehold.co/500x500/191713/d4af37?text=OUD+MOOD"},
-{id:2,name:"Asad",brand:"LATTAFA",price:1499,category:"Мужские",image:"https://placehold.co/500x500/191713/d4af37?text=ASAD"},
-{id:3,name:"Yara",brand:"LATTAFA",price:1399,category:"Женские",image:"https://placehold.co/500x500/191713/d4af37?text=YARA"},
-{id:4,name:"Club de Nuit",brand:"ARMAF",price:1899,category:"Мужские",image:"https://placehold.co/500x500/191713/d4af37?text=CLUB+DE+NUIT"}
-];
+const SUPABASE_URL="https://lgbzdowsplindautytov.supabase.co";
+const SUPABASE_KEY="sb_publishable_lEfYUgsaaSP1zimr0YT9Qg_37UuM6uE";
+
+let products=[];
 let selected="Все";
 let cart=[];
+let currentProduct=null;
+
+async function loadProducts(){
+ const box=document.getElementById("products");
+ try{
+  const response=await fetch(
+   SUPABASE_URL+"/rest/v1/products?select=id,name,description,price,old_price,category,image_url,is_active,gift_bag_included&is_active=eq.true&order=created_at.desc",
+   {headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY}}
+  );
+  if(!response.ok)throw new Error(await response.text());
+  products=await response.json();
+  buildCategories();
+  render();
+ }catch(e){
+  console.error(e);
+  box.innerHTML='<div class="status">Не удалось загрузить товары. Проверьте настройки доступа Supabase.</div>';
+ }
+}
+
+function buildCategories(){
+ const cats=["Все",...new Set(products.map(p=>p.category).filter(Boolean))];
+ const box=document.getElementById("categories");
+ box.innerHTML="";
+ cats.forEach(cat=>{
+  const b=document.createElement("button");
+  b.textContent=cat;
+  b.className=cat===selected?"active":"";
+  b.onclick=()=>filter(cat);
+  box.appendChild(b);
+ });
+}
+
+function filter(cat){
+ selected=cat;
+ buildCategories();
+ render();
+}
+
+function safeImage(url){
+ try{
+  const u=new URL(url);
+  if(u.protocol==="https:"||u.protocol==="http:")return u.href;
+ }catch(e){}
+ return "https://placehold.co/600x600/191713/d4af37?text=RAVO+PRIVE";
+}
+
+function esc(s){
+ return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function money(n){
+ return Number(n||0).toLocaleString("ru-RU")+" ₽";
+}
+
 function render(){
-const q=document.getElementById("search").value.toLowerCase();
-const list=products.filter(p=>(selected==="Все"||p.category===selected)&&(p.name+" "+p.brand).toLowerCase().includes(q));
-document.getElementById("products").innerHTML=list.map(p=>`
-<div class="product">
-<img src="${p.image}" alt="${p.name}">
-<div class="info">
-<div class="brand">${p.brand}</div>
-<div class="name">${p.name}</div>
-<div class="price">${p.price.toLocaleString("ru-RU")} ₽</div>
-<button class="add" onclick="add(${p.id})">В КОРЗИНУ</button>
-</div></div>`).join("")||'<div class="empty">Ничего не найдено</div>';
+ const q=document.getElementById("search").value.toLowerCase();
+ const list=products.filter(p=>
+  (selected==="Все"||p.category===selected)&&
+  ((p.name||"")+" "+(p.description||"")+" "+(p.category||"")).toLowerCase().includes(q)
+ );
+ const box=document.getElementById("products");
+ if(!list.length){
+  box.innerHTML='<div class="empty">Ничего не найдено</div>';
+  return;
+ }
+ box.innerHTML=list.map(p=>`
+  <article class="product" onclick="openProduct('${esc(p.id)}')">
+   <img src="${safeImage(p.image_url)}" alt="${esc(p.name)}"
+    onerror="this.src='https://placehold.co/600x600/191713/d4af37?text=RAVO+PRIVE'">
+   <div class="info">
+    <div class="brand">${esc(p.category||"RAVO PRIVÉ")}</div>
+    <div class="name">${esc(p.name)}</div>
+    <div class="price">${money(p.price)}
+     ${p.old_price?`<span class="old">${money(p.old_price)}</span>`:""}
+    </div>
+   </div>
+  </article>`).join("");
 }
-function filter(cat,el){
-selected=cat;
-document.querySelectorAll(".categories button").forEach(b=>b.classList.remove("active"));
-el.classList.add("active");render();
+
+function openProduct(id){
+ currentProduct=products.find(p=>String(p.id)===String(id));
+ if(!currentProduct)return;
+ const p=currentProduct;
+ document.getElementById("detailContent").innerHTML=`
+  <img class="detail-image" src="${safeImage(p.image_url)}"
+   onerror="this.src='https://placehold.co/600x600/191713/d4af37?text=RAVO+PRIVE'">
+  <div class="detail-content">
+   <div class="detail-brand">${esc(p.category||"RAVO PRIVÉ")}</div>
+   <h1 class="detail-title">${esc(p.name)}</h1>
+   <div class="detail-price">${money(p.price)}
+    ${p.old_price?`<span class="detail-old">${money(p.old_price)}</span>`:""}
+   </div>
+   <div class="detail-description">${esc(p.description||"Описание этого аромата скоро появится.")}</div>
+   <div class="detail-label">ИНФОРМАЦИЯ О ТОВАРЕ</div>
+   <div class="detail-feature">Категория: ${esc(p.category||"Не указана")}</div>
+   <div class="detail-feature">Подарочный пакет: ${p.gift_bag_included?'<span class="gift">Включён</span>':'Не включён'}</div>
+   <button class="add" onclick="add('${esc(p.id)}')">ДОБАВИТЬ В КОРЗИНУ</button>
+  </div>`;
+ document.getElementById("catalogPage").classList.remove("active");
+ document.getElementById("detailPage").classList.add("active");
+ document.getElementById("homeTab").classList.remove("active");
+ window.scrollTo(0,0);
 }
+
+function showCatalog(){
+ document.getElementById("detailPage").classList.remove("active");
+ document.getElementById("catalogPage").classList.add("active");
+ document.getElementById("homeTab").classList.add("active");
+ window.scrollTo(0,0);
+}
+
 function add(id){
-cart.push(products.find(p=>p.id===id));
-document.getElementById("count").textContent=cart.length;
+ const p=products.find(x=>String(x.id)===String(id));
+ if(!p)return;
+ cart.push(p);
+ document.getElementById("count").textContent=cart.length;
+ const b=document.querySelector("#detailContent .add");
+ if(b)b.textContent="ДОБАВЛЕНО ✓";
 }
+
 function openCart(){
-document.getElementById("cartPanel").style.display="block";
-document.getElementById("cartItems").innerHTML=cart.length?cart.map((p,i)=>`<div class="cartItem">${p.name} — ${p.price} ₽ <button onclick="removeItem(${i})" style="float:right;background:none;color:#d4af37;border:0">Удалить</button></div>`).join(""):"<p>Корзина пока пуста</p>";
-document.getElementById("total").textContent="Итого: "+cart.reduce((s,p)=>s+p.price,0).toLocaleString("ru-RU")+" ₽";
+ document.getElementById("cartPanel").style.display="block";
+ updateCart();
 }
-function removeItem(i){cart.splice(i,1);document.getElementById("count").textContent=cart.length;openCart()}
-function closeCart(){document.getElementById("cartPanel").style.display="none"}
-render();
+
+function updateCart(){
+ document.getElementById("cartItems").innerHTML=cart.length?
+ cart.map((p,i)=>`<div class="cartItem">${esc(p.name)} — ${money(p.price)} <button onclick="removeItem(${i})">Удалить</button></div>`).join("")
+ :"<p>Корзина пока пуста</p>";
+ document.getElementById("total").textContent="Итого: "+money(cart.reduce((s,p)=>s+Number(p.price||0),0));
+}
+
+function removeItem(i){
+ cart.splice(i,1);
+ document.getElementById("count").textContent=cart.length;
+ updateCart();
+}
+
+function closeCart(){
+ document.getElementById("cartPanel").style.display="none";
+}
+
+loadProducts();
 </script>
 </body>
 </html>
