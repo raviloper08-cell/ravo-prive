@@ -84,10 +84,36 @@ nav button.active{color:#d4af37}
  <button class="back" onclick="showCatalog()">← Назад в каталог</button>
  <div id="detailContent"></div>
 </main>
+<main id="profilePage" class="page">
+ <button class="back" onclick="showCatalog()">← Назад в каталог</button>
+ <div style="padding:20px 18px">
+  <h2 style="font:22px Georgia,serif;font-weight:400">Мой аккаунт</h2>
 
+  <div id="profileCard" style="background:#151515;border:1px solid #4c4025;border-radius:14px;padding:20px">
+   <div id="profileStatus" style="color:#aaa;font-size:13px">Проверяем вход через Telegram...</div>
+  </div>
+
+  <div style="background:#151515;border:1px solid #4c4025;border-radius:14px;padding:20px;margin-top:14px">
+   <h3 style="font:22px Georgia,serif;font-weight:400">RAVO BONUS</h3>
+   <div id="profileBonus" style="font:28px Georgia,serif;color:#d4af37">0 ₽</div>
+   <div style="color:#999;font-size:12px">Баланс бонусов</div>
+  </div>
+
+  <div style="background:#151515;border:1px solid #4c4025;border-radius:14px;padding:20px;margin-top:14px">
+   <h3 style="font:22px Georgia,serif;font-weight:400">Мои заказы</h3>
+   <div style="color:#aaa;font-size:13px">История заказов подключим следующим этапом.</div>
+  </div>
+
+  <div style="background:#151515;border:1px solid #4c4025;border-radius:14px;padding:20px;margin-top:14px">
+   <h3 style="font:22px Georgia,serif;font-weight:400">Подписка RAVO</h3>
+   <div style="color:#aaa;font-size:13px">Информация о подписке подключим следующим этапом.</div>
+  </div>
+ </div>
+</main>
 <nav>
  <button class="active" id="homeTab" onclick="showCatalog()"><span>⌂</span>Каталог</button>
  <button onclick="openCart()"><span>♧</span>Корзина <b id="count">0</b></button>
+ <button onclick="showProfile()"><span>♙</span>Аккаунт</button>
 </nav>
 
 <div id="cartPanel">
@@ -114,10 +140,77 @@ nav button.active{color:#d4af37}
  <div class="checkout-note">После отправки заказа мы свяжемся с тобой для уточнения деталей.</div>
 </div>
 
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
 const SUPABASE_URL="https://lgbzdowsplindautytov.supabase.co";
 const SUPABASE_KEY="sb_publishable_lEfYUgsaaSP1zimr0YT9Qg_37UuM6uE";
+let telegramProfile = null;
+function showCatalog(){
+ document.getElementById("detailPage").classList.remove("active");
+ document.getElementById("profilePage").classList.remove("active");
+ document.getElementById("catalogPage").classList.add("active");
+ document.getElementById("homeTab").classList.add("active");
+ window.scrollTo(0,0);
+}
 
+
+ if(!telegramProfile) authenticateTelegram();
+}
+
+async function authenticateTelegram(){
+ const status=document.getElementById("profileStatus");
+ const tg=window.Telegram&&window.Telegram.WebApp;
+
+ if(!tg||!tg.initData){
+  status.textContent="Открой магазин через кнопку меню нашего Telegram-бота, чтобы войти.";
+  return;
+ }
+
+ try{
+  tg.ready();
+  tg.expand();
+  status.textContent="Подключаем аккаунт...";
+
+  const response=await fetch("/api/auth",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({initData:tg.initData})
+  });
+
+  const result=await response.json();
+
+  if(!response.ok||!result.success){
+   throw new Error(result.error||"Не удалось выполнить вход.");
+  }
+
+  telegramProfile=result.profile;
+
+  const fullName=[
+   telegramProfile.first_name,
+   telegramProfile.last_name
+  ].filter(Boolean).join(" ")||"Покупатель RAVO";
+
+  const avatar=telegramProfile.photo_url
+   ? '<img src="'+esc(telegramProfile.photo_url)+'" alt="" style="width:58px;height:58px;border-radius:50%;object-fit:cover;border:1px solid #d4af37">'
+   : '<div style="width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#292216;color:#d4af37;font-size:25px">♙</div>';
+
+  document.getElementById("profileCard").innerHTML=
+   '<div style="display:flex;align-items:center;gap:14px">'+
+   avatar+
+   '<div><div style="font:21px Georgia,serif">'+esc(fullName)+'</div>'+
+   '<div style="color:#999;font-size:12px;margin-top:5px">'+
+   (telegramProfile.username?'@'+esc(telegramProfile.username):'Аккаунт Telegram')+
+   '</div></div></div>'+
+   '<p style="color:#aaa;font-size:13px">Аккаунт успешно подключён к RAVO PRIVÉ.</p>';
+
+  document.getElementById("profileBonus").textContent=
+   Number(telegramProfile.bonus_balance||0).toLocaleString("ru-RU")+" ₽";
+
+ }catch(error){
+  console.error(error);
+  status.textContent=error.message||"Ошибка входа. Открой магазин заново через Telegram.";
+ }
+}
 let products=[];
 let selected="Все";
 let cart=[];
