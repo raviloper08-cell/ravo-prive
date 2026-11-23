@@ -1,5 +1,5 @@
 
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac, timingSafeEqual, randomUUID } from "node:crypto";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -11,10 +11,14 @@ export default async function handler(req, res) {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!botToken || !supabaseUrl || !serviceKey) {
-    return res.status(500).json({
-      error: "Server authentication is not configured"
-    });
+    return res.status(500).json({ error: "Server authentication is not configured" });
   }
+
+  const headers = {
+    apikey: serviceKey,
+    Authorization: `Bearer ${serviceKey}`,
+    "Content-Type": "application/json"
+  };
 
   try {
     const initData = req.body?.initData;
@@ -55,11 +59,12 @@ export default async function handler(req, res) {
     }
 
     const authDate = Number(params.get("auth_date"));
+    const now = Math.floor(Date.now() / 1000);
 
     if (
       !Number.isFinite(authDate) ||
-      authDate > Math.floor(Date.now() / 1000) + 60 ||
-      Math.floor(Date.now() / 1000) - authDate > 86400
+      authDate > now + 60 ||
+      now - authDate > 86400
     ) {
       return res.status(401).json({ error: "Telegram session expired" });
     }
@@ -76,8 +81,60 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Invalid Telegram user" });
     }
 
-    const profile = {
-      telegram_id: String(user.id),
+    const telegramId = String(user.id);
+
+    // Ищем существующий Telegram-профиль.
+    const profileResponse = await fetch(
+      `${supabaseUrl}/rest/v1/profiles?telegram_id=eq.${encodeURIComponent(telegramId)}&select=*`,
+      { headers }
+    );
+
+    const profiles = await profileResponse.json();
+
+    if (!profileResponse.ok) {
+      console.error("Profile lookup error:", profiles);
+      return res.status(500).json({ error: "Could not load profile" });
+    }
+
+    let profile = profiles[0];
+
+    // Если профиль уже связан с Auth, используем эту связь.
+    let authUserId = profile?.auth_user_id || null;
+
+    // Иначе создаём отдельного Auth-пользователя.
+    if (!authUserId) {
+      const newAuthId = randomUUID();
+
+      const createAuthResponse = await fetch(
+        `${supabaseUrl}/auth/v1/admin/users`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            id: newAuthId,
+            email: `telegram_${telegramId}@users.ravo.invalid`,
+            email_confirm: true,
+            password: randomUUID() + randomUUID(),
+            user_metadata: {
+              telegram_id: telegramId
+            }
+          })
+        }
+      );
+
+      const authResult = await createAuthResponse.json();
+
+      if (!createAuthResponse.ok) {
+        console.error("Auth user creation error:", authResult);
+        return res.status(500).json({ error: "Could not create auth user" });
+      }
+
+      authUserId = authResult.id;
+    }
+
+    const updatedProfile = {
+      telegram_id: telegramId,
+      auth_user_id: authUserId,
       first_name: user.first_name || "",
       last_name: user.last_name || "",
       username: user.username || null,
@@ -85,30 +142,28 @@ export default async function handler(req, res) {
       updated_at: new Date().toISOString()
     };
 
-    const response = await fetch(
+    const saveResponse = await fetch(
       `${supabaseUrl}/rest/v1/profiles?on_conflict=telegram_id`,
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "apikey": serviceKey,
-          "Authorization": `Bearer ${serviceKey}`,
-          "Prefer": "resolution=merge-duplicates,return=representation"
+          ...headers,
+          Prefer: "resolution=merge-duplicates,return=representation"
         },
-        body: JSON.stringify(profile)
+        body: JSON.stringify(updatedProfile)
       }
     );
 
-    const result = await response.json();
+    const savedProfiles = await saveResponse.json();
 
-    if (!response.ok) {
-      console.error("Supabase profile error:", result);
+    if (!saveResponse.ok) {
+      console.error("Profile save error:", savedProfiles);
       return res.status(500).json({ error: "Could not save profile" });
     }
 
     return res.status(200).json({
       success: true,
-      profile: result[0]
+      profile: savedProfiles[0]
     });
 
   } catch (error) {
