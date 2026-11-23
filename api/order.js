@@ -111,6 +111,9 @@ const webhookResponse = await fetch(
 
 const webhookResult = await webhookResponse.json();
 console.log("Webhook setup:", webhookResult);
+if (!webhookResponse.ok || !webhookResult.ok) {
+  throw new Error("Telegram webhook не подключён: " + JSON.stringify(webhookResult));
+}
     const telegramResponse = await fetch(
       `https://api.telegram.org/bot${token}/sendMessage`,
       {
