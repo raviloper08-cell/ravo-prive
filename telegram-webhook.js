@@ -41,8 +41,9 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    const match = /^(order_confirm|order_cancel|order_done):(\d+)$/
-      .exec(callback.data || "");
+    const match =
+      /^(order_confirm|order_cancel|order_done):([A-Za-z0-9_-]+)$/
+        .exec(callback.data || "");
 
     if (!match || !message?.message_id) {
       await answerCallback(token, callback.id, "Некорректная кнопка");
@@ -54,7 +55,7 @@ export default async function handler(req, res) {
 
     const statusMap = {
       order_confirm: {
-        value: "confirmed",
+        value: "processing",
         text: "✅ <b>ЗАКАЗ ПОДТВЕРЖДЁН</b>",
         answer: "Заказ подтверждён"
       },
@@ -64,7 +65,7 @@ export default async function handler(req, res) {
         answer: "Заказ отменён"
       },
       order_done: {
-        value: "completed",
+        value: "delivered",
         text: "📦 <b>ЗАКАЗ ВЫПОЛНЕН</b>",
         answer: "Заказ выполнен"
       }
@@ -98,6 +99,7 @@ export default async function handler(req, res) {
     }
 
     const originalText = message.text || "";
+
     const cleanText = originalText.replace(
       /\n\n(?:✅ <b>ЗАКАЗ ПОДТВЕРЖДЁН<\/b>|❌ <b>ЗАКАЗ ОТМЕНЁН<\/b>|📦 <b>ЗАКАЗ ВЫПОЛНЕН<\/b>)$/,
       ""
