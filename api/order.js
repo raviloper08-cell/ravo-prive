@@ -1,6 +1,4 @@
 
-import { createHash } from "node:crypto";
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -25,7 +23,7 @@ export default async function handler(req, res) {
     const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
     if (!token || !chatId || !supabaseUrl || !supabaseKey) {
-      return res.status(500).json({ error: "Сервер не настроен" });
+      throw new Error("Не настроены переменные сервера");
     }
 
     const cleanItems = items.map(item => ({
@@ -41,26 +39,30 @@ export default async function handler(req, res) {
 
     const query = new URLSearchParams({
       select: "id,name,price,is_active",
-      id: \`in.(\${ids.join(",")})\`,
+      id: `in.(${ids.join(",")})`,
       is_active: "eq.true"
     });
 
     const productResponse = await fetch(
-      \`\${supabaseUrl}/rest/v1/products?\${query}\`,
+      `${supabaseUrl}/rest/v1/products?${query}`,
       {
         headers: {
           apikey: supabaseKey,
-          Authorization: \`Bearer \${supabaseKey}\`
+          Authorization: `Bearer ${supabaseKey}`
         }
       }
     );
 
-    if (!productResponse.ok) throw new Error("Не удалось проверить товары");
+    if (!productResponse.ok) {
+      throw new Error("Ошибка проверки товаров в Supabase");
+    }
 
     const products = await productResponse.json();
 
     if (products.length !== ids.length) {
-      return res.status(400).json({ error: "Один из товаров больше недоступен" });
+      return res.status(400).json({
+        error: "Один из товаров больше недоступен"
+      });
     }
 
     const productMap = new Map(products.map(p => [String(p.id), p]));
@@ -76,44 +78,23 @@ export default async function handler(req, res) {
 
       total += price * item.quantity;
 
-      return \`• \${escapeHtml(product.name)} × \${item.quantity} — \${(price * item.quantity).toLocaleString("ru-RU")} ₽\`;
+      return `• ${escapeHtml(product.name)} × ${item.quantity} — ${(price * item.quantity).toLocaleString("ru-RU")} ₽`;
     });
 
     const message = [
       "🛍 <b>НОВЫЙ ЗАКАЗ — RAVO PRIVÉ</b>",
       "",
-      \`👤 Имя: \${escapeHtml(name.trim())}\`,
-      \`📞 Телефон: \${escapeHtml(phone.trim())}\`,
+      `👤 Имя: ${escapeHtml(name.trim())}`,
+      `📞 Телефон: ${escapeHtml(phone.trim())}`,
       "",
       "<b>Товары:</b>",
       ...lines,
       "",
-      \`💰 <b>Итого: \${total.toLocaleString("ru-RU")} ₽</b>\`
+      `💰 <b>Итого: ${total.toLocaleString("ru-RU")} ₽</b>`
     ].join("\n");
 
-    const secret = createHash("sha256").update(token).digest("hex");
-
-    const webhookResponse = await fetch(
-      \`https://api.telegram.org/bot\${token}/setWebhook\`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          url: "https://ravo-priv.vercel.app/api/telegram-webhook",
-          secret_token: secret,
-          allowed_updates: ["callback_query"]
-        })
-      }
-    );
-
-    const webhookResult = await webhookResponse.json();
-
-    if (!webhookResponse.ok || !webhookResult.ok) {
-      throw new Error("Не удалось подключить Telegram webhook");
-    }
-
     const telegramResponse = await fetch(
-      \`https://api.telegram.org/bot\${token}/sendMessage\`,
+      `https://api.telegram.org/bot${token}/sendMessage`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -146,6 +127,7 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error("Order error:", error);
+
     return res.status(500).json({
       error: "Не удалось отправить заказ. Попробуйте позже."
     });
