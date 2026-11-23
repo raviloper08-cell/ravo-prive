@@ -59,6 +59,15 @@ nav button.active{color:#d4af37}
 .checkout-note{font-size:12px;color:#999;line-height:1.6;margin-top:15px}
 #checkoutMessage{font-size:13px;color:#d4af37;line-height:1.5;margin-top:14px}
 .add:disabled{opacity:.5;cursor:wait}
+.profile-box{background:#151515;border:1px solid #4c4025;border-radius:14px;padding:20px;margin-top:14px}
+.profile-heading{font:22px Georgia,serif;font-weight:400;margin:0 0 17px}
+.profile-muted{color:#999;font-size:12px;line-height:1.6}
+.profile-stat{font:25px Georgia,serif;color:#d4af37;margin-top:8px}
+.profile-line{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #29251b;font-size:13px}
+.profile-line:last-child{border-bottom:0}
+.profile-line span:first-child{color:#999}
+.profile-line span:last-child{text-align:right;overflow-wrap:anywhere}
+.profile-status{display:inline-block;padding:6px 10px;border:1px solid #594820;border-radius:20px;color:#d4af37;font-size:11px}
 </style>
 </head>
 <body>
@@ -89,21 +98,48 @@ nav button.active{color:#d4af37}
  <button class="back" onclick="showCatalog()">← Назад в каталог</button>
  <div style="padding:20px 18px">
   <h2 style="font:22px Georgia,serif;font-weight:400">Мой аккаунт</h2>
-  <div id="profileCard" style="background:#151515;border:1px solid #4c4025;border-radius:14px;padding:20px">
+
+  <div id="profileCard" class="profile-box">
    <div id="profileStatus" style="color:#aaa;font-size:13px">Проверяем вход через Telegram...</div>
   </div>
-  <div style="background:#151515;border:1px solid #4c4025;border-radius:14px;padding:20px;margin-top:14px">
-   <h3 style="font:22px Georgia,serif;font-weight:400">RAVO BONUS</h3>
-   <div id="profileBonus" style="font:28px Georgia,serif;color:#d4af37">0 ₽</div>
-   <div style="color:#999;font-size:12px">Баланс бонусов</div>
+
+  <div class="profile-box">
+   <h3 class="profile-heading">RAVO BONUS</h3>
+   <div id="profileBonus" class="profile-stat">0 ₽</div>
+   <div class="profile-muted">Твой бонусный баланс</div>
   </div>
-  <div style="background:#151515;border:1px solid #4c4025;border-radius:14px;padding:20px;margin-top:14px">
-   <h3 style="font:22px Georgia,serif;font-weight:400">Мои заказы</h3>
-   <div style="color:#aaa;font-size:13px">История заказов подключим следующим этапом.</div>
+
+  <div class="profile-box">
+   <h3 class="profile-heading">Моя статистика</h3>
+   <div class="profile-line">
+    <span>Всего заказов</span>
+    <span id="profileOrders">0</span>
+   </div>
+   <div class="profile-line">
+    <span>Потрачено всего</span>
+    <span id="profileSpent">0 ₽</span>
+   </div>
   </div>
-  <div style="background:#151515;border:1px solid #4c4025;border-radius:14px;padding:20px;margin-top:14px">
-   <h3 style="font:22px Georgia,serif;font-weight:400">Подписка RAVO</h3>
-   <div style="color:#aaa;font-size:13px">Информация о подписке подключим следующим этапом.</div>
+
+  <div class="profile-box">
+   <h3 class="profile-heading">Подписка RAVO</h3>
+   <div class="profile-line">
+    <span>Тариф</span>
+    <span id="subscriptionPlan">Без подписки</span>
+   </div>
+   <div class="profile-line">
+    <span>Статус</span>
+    <span id="subscriptionStatus" class="profile-status">Не активна</span>
+   </div>
+   <div class="profile-line">
+    <span>Действует до</span>
+    <span id="subscriptionExpires">—</span>
+   </div>
+  </div>
+
+  <div class="profile-box">
+   <h3 class="profile-heading">Мои заказы</h3>
+   <div class="profile-muted">Количество заказов отображается по данным аккаунта. Историю заказов подключим отдельно.</div>
   </div>
  </div>
 </main>
@@ -146,6 +182,7 @@ let products=[];
 let selected="Все";
 let cart=[];
 let currentProduct=null;
+let authLoading=false;
 
 function showCatalog(){
  document.getElementById("detailPage").classList.remove("active");
@@ -164,15 +201,75 @@ function showProfile(){
  document.getElementById("accountTab").classList.add("active");
  window.scrollTo(0,0);
 
- if(!telegramProfile) authenticateTelegram();
+ if(!telegramProfile&&!authLoading) authenticateTelegram();
+}
+
+function formatDate(value){
+ if(!value)return "—";
+ const date=new Date(value);
+ if(Number.isNaN(date.getTime()))return "—";
+ return date.toLocaleDateString("ru-RU",{
+  day:"numeric",month:"long",year:"numeric"
+ });
+}
+
+function getPlanName(plan){
+ const names={
+  none:"Без подписки",
+  basic:"BASIC",
+  premium:"PREMIUM",
+  premium_plus:"PREMIUM PLUS"
+ };
+ return names[String(plan||"none").toLowerCase()]||String(plan);
+}
+
+function displayProfile(profile){
+ const fullName=[
+  profile.first_name,
+  profile.last_name
+ ].filter(Boolean).join(" ")||"Покупатель RAVO";
+
+ const avatar=profile.photo_url
+  ? '<img src="'+esc(profile.photo_url)+'" alt="" style="width:58px;height:58px;border-radius:50%;object-fit:cover;border:1px solid #d4af37">'
+  : '<div style="width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#292216;color:#d4af37;font-size:25px">♙</div>';
+
+ document.getElementById("profileCard").innerHTML=
+  '<div style="display:flex;align-items:center;gap:14px">'+
+  avatar+
+  '<div><div style="font:21px Georgia,serif">'+esc(fullName)+'</div>'+
+  '<div style="color:#999;font-size:12px;margin-top:5px">'+
+  (profile.username?'@'+esc(profile.username):'Аккаунт Telegram')+
+  '</div></div></div>'+
+  '<p class="profile-muted">Аккаунт успешно подключён к RAVO PRIVÉ.</p>';
+
+ document.getElementById("profileBonus").textContent=money(profile.bonus_balance);
+ document.getElementById("profileOrders").textContent=
+  Number(profile.total_orders||0).toLocaleString("ru-RU");
+ document.getElementById("profileSpent").textContent=money(profile.total_spent);
+
+ const plan=profile.subscription_plan||"none";
+ const status=String(profile.subscription_status||"inactive").toLowerCase();
+ const expiry=profile.subscription_expires_at;
+ const expiryTime=expiry?new Date(expiry).getTime():null;
+ const expired=expiryTime!==null&&!Number.isNaN(expiryTime)&&expiryTime<Date.now();
+ const active=status==="active"&&!expired;
+
+ document.getElementById("subscriptionPlan").textContent=getPlanName(plan);
+ document.getElementById("subscriptionStatus").textContent=
+  active?"Активна":(expired?"Истекла":"Не активна");
+ document.getElementById("subscriptionExpires").textContent=formatDate(expiry);
 }
 
 async function authenticateTelegram(){
+ if(authLoading)return;
+ authLoading=true;
+
  const status=document.getElementById("profileStatus");
  const tg=window.Telegram&&window.Telegram.WebApp;
 
  if(!tg||!tg.initData){
   status.textContent="Открой магазин через кнопку меню нашего Telegram-бота, чтобы войти.";
+  authLoading=false;
   return;
  }
 
@@ -189,36 +286,18 @@ async function authenticateTelegram(){
 
   const result=await response.json();
 
-  if(!response.ok||!result.success){
+  if(!response.ok||!result.success||!result.profile){
    throw new Error(result.error||"Не удалось выполнить вход.");
   }
 
   telegramProfile=result.profile;
-
-  const fullName=[
-   telegramProfile.first_name,
-   telegramProfile.last_name
-  ].filter(Boolean).join(" ")||"Покупатель RAVO";
-
-  const avatar=telegramProfile.photo_url
-   ? '<img src="'+esc(telegramProfile.photo_url)+'" alt="" style="width:58px;height:58px;border-radius:50%;object-fit:cover;border:1px solid #d4af37">'
-   : '<div style="width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#292216;color:#d4af37;font-size:25px">♙</div>';
-
-  document.getElementById("profileCard").innerHTML=
-   '<div style="display:flex;align-items:center;gap:14px">'+
-   avatar+
-   '<div><div style="font:21px Georgia,serif">'+esc(fullName)+'</div>'+
-   '<div style="color:#999;font-size:12px;margin-top:5px">'+
-   (telegramProfile.username?'@'+esc(telegramProfile.username):'Аккаунт Telegram')+
-   '</div></div></div>'+
-   '<p style="color:#aaa;font-size:13px">Аккаунт успешно подключён к RAVO PRIVÉ.</p>';
-
-  document.getElementById("profileBonus").textContent=
-   Number(telegramProfile.bonus_balance||0).toLocaleString("ru-RU")+" ₽";
+  displayProfile(telegramProfile);
 
  }catch(error){
   console.error(error);
   status.textContent=error.message||"Ошибка входа. Открой магазин заново через Telegram.";
+ }finally{
+  authLoading=false;
  }
 }
 
