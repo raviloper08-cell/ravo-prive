@@ -1,4 +1,4 @@
-
+import { createHash } from "node:crypto";
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -92,7 +92,25 @@ export default async function handler(req, res) {
       "",
       `💰 <b>Итого: ${total.toLocaleString("ru-RU")} ₽</b>`
     ].join("\n");
+const secret = createHash("sha256")
+  .update(token)
+  .digest("hex");
 
+const webhookResponse = await fetch(
+  `https://api.telegram.org/bot${token}/setWebhook`,
+  {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      url: "https://ravo-priv.vercel.app/api/telegram-webhook",
+      secret_token: secret,
+      allowed_updates: ["callback_query"]
+    })
+  }
+);
+
+const webhookResult = await webhookResponse.json();
+console.log("Webhook setup:", webhookResult);
     const telegramResponse = await fetch(
       `https://api.telegram.org/bot${token}/sendMessage`,
       {
