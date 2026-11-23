@@ -1,34 +1,103 @@
-import { createHash } from "node:crypto";
+
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  }[char]));
+}
+
+function verifyTelegram(initData, token) {
+  if (typeof initData !== "string" || !initData || initData.length > 10000) {
+    return null;
+  }
+
+  const params = new URLSearchParams(initData);
+  const hash = params.get("hash");
+  const authDate = Number(params.get("auth_date"));
+  const userRaw = params.get("user");
+
+  if (!hash || !/^[a-f0-9]{64}$/i.test(hash) || !userRaw) {
+    return null;
+  }
+
+  if (!Number.isFinite(authDate) ||
+      Math.floor(Date.now() / 1000) - authDate > 86400 ||
+      authDate > Math.floor(Date.now() / 1000) + 60) {
+    return null;
+  }
+
+  const dataCheckString = [...params.entries()]
+    .filter(([key]) => key !== "hash")
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}=${value}`)
+    .join("\n");
+
+  const secretKey = createHmac("sha256", "WebAppData")
+    .update(token)
+    .digest();
+
+  const calculatedHash = createHmac("sha256", secretKey)
+    .update(dataCheckString)
+    .digest("hex");
+
+  const a = Buffer.from(hash, "hex");
+  const b = Buffer.from(calculatedHash, "hex");
+
+  if (a.length !== b.length || !timingSafeEqual(a, b)) {
+    return null;
+  }
+
+  try {
+    const user = JSON.parse(userRaw);
+    return user.id ? user : null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const { name, phone, items } = req.body || {};
+    const { name, phone, items, initData } = req.body || {};
+
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!token || !chatId || !supabaseUrl || !serviceKey) {
+      throw new Error("Не настроены переменные сервера");
+    }
 
     if (
-      typeof name !== "string" || name.trim().length < 2 ||
-      name.length > 80 ||
-      typeof phone !== "string" || phone.trim().length < 5 ||
-      phone.length > 30 ||
+      typeof name !== "string" || name.trim().length < 2 || name.length > 80 ||
+      typeof phone !== "string" || phone.trim().length < 5 || phone.length > 30 ||
       !Array.isArray(items) || items.length === 0 || items.length > 30
     ) {
       return res.status(400).json({ error: "Проверьте данные заказа" });
     }
 
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_ANON_KEY;
+    const telegramUser = verifyTelegram(initData, token);
 
-    if (!token || !chatId || !supabaseUrl || !supabaseKey) {
-      throw new Error("Не настроены переменные сервера");
+    if (!telegramUser) {
+      return res.status(401).json({
+        error: "Не удалось подтвердить Telegram. Откройте магазин через Telegram."
+      });
     }
+
+    const telegramId = String(telegramUser.id);
 
     const cleanItems = items.map(item => ({
       id: String(item.id || ""),
-      quantity: Math.max(1, Math.min(20, Number(item.quantity) || 1))
+      quantity: Math.max(1, Math.min(20, Math.floor(Number(item.quantity) || 1)))
     }));
 
     if (cleanItems.some(item => !item.id)) {
@@ -47,14 +116,14 @@ export default async function handler(req, res) {
       `${supabaseUrl}/rest/v1/products?${query}`,
       {
         headers: {
-          apikey: supabaseKey,
-          Authorization: `Bearer ${supabaseKey}`
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`
         }
       }
     );
 
     if (!productResponse.ok) {
-      throw new Error("Ошибка проверки товаров в Supabase");
+      throw new Error("Ошибка проверки товаров");
     }
 
     const products = await productResponse.json();
@@ -68,7 +137,7 @@ export default async function handler(req, res) {
     const productMap = new Map(products.map(p => [String(p.id), p]));
     let total = 0;
 
-    const lines = cleanItems.map(item => {
+    const orderItems = cleanItems.map(item => {
       const product = productMap.get(item.id);
       const price = Number(product.price);
 
@@ -76,44 +145,95 @@ export default async function handler(req, res) {
         throw new Error("Некорректная цена товара");
       }
 
-      total += price * item.quantity;
+      const lineTotal = price * item.quantity;
+      total += lineTotal;
 
-      return `• ${escapeHtml(product.name)} × ${item.quantity} — ${(price * item.quantity).toLocaleString("ru-RU")} ₽`;
+      return {
+        product_id: String(product.id),
+        name: product.name,
+        price,
+        quantity: item.quantity,
+        total: lineTotal
+      };
     });
 
+    const profileResponse = await fetch(
+      `${supabaseUrl}/rest/v1/profiles?telegram_id=eq.${encodeURIComponent(telegramId)}&select=id,bonus_balance,subscription_plan`,
+      {
+        headers: {
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`
+        }
+      }
+    );
+
+    if (!profileResponse.ok) {
+      throw new Error("Не удалось найти профиль покупателя");
+    }
+
+    const profiles = await profileResponse.json();
+
+    if (!profiles.length) {
+      return res.status(400).json({
+        error: "Профиль не найден. Перезапустите магазин в Telegram."
+      });
+    }
+
+    const profile = profiles[0];
+
+    const orderPayload = {
+      user_id: profile.id,
+      telegram_id: telegramId,
+      customer_name: name.trim(),
+      phone: phone.trim(),
+      items: orderItems,
+      total_amount: total,
+      status: "new",
+      payment_status: "pending"
+    };
+
+    const saveResponse = await fetch(
+      `${supabaseUrl}/rest/v1/orders?select=id`,
+      {
+        method: "POST",
+        headers: {
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`,
+          "Content-Type": "application/json",
+          Prefer: "return=representation"
+        },
+        body: JSON.stringify(orderPayload)
+      }
+    );
+
+    const savedOrders = await saveResponse.json();
+
+    if (!saveResponse.ok || !savedOrders.length) {
+      console.error("Supabase order save error:", savedOrders);
+      throw new Error("Не удалось сохранить заказ");
+    }
+
+    const order = savedOrders[0];
+
+    const lines = orderItems.map(item =>
+      `• ${escapeHtml(item.name)} × ${item.quantity} — ${item.total.toLocaleString("ru-RU")} ₽`
+    );
+
     const message = [
-      "🛍 <b>НОВЫЙ ЗАКАЗ — RAVO PRIVÉ</b>",
+      `🛍 <b>НОВЫЙ ЗАКАЗ RAVO PRIVÉ №${order.id}</b>`,
       "",
       `👤 Имя: ${escapeHtml(name.trim())}`,
       `📞 Телефон: ${escapeHtml(phone.trim())}`,
+      `🆔 Telegram ID: ${telegramId}`,
       "",
       "<b>Товары:</b>",
       ...lines,
       "",
-      `💰 <b>Итого: ${total.toLocaleString("ru-RU")} ₽</b>`
+      `💰 <b>Итого: ${total.toLocaleString("ru-RU")} ₽</b>`,
+      "",
+      "🕒 Статус: Новый"
     ].join("\n");
-const secret = createHash("sha256")
-  .update(token)
-  .digest("hex");
 
-const webhookResponse = await fetch(
-  `https://api.telegram.org/bot${token}/setWebhook`,
-  {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      url: "https://ravo-priv.vercel.app/api/telegram-webhook",
-      secret_token: secret,
-      allowed_updates: ["callback_query"]
-    })
-  }
-);
-
-const webhookResult = await webhookResponse.json();
-console.log("Webhook setup:", webhookResult);
-if (!webhookResponse.ok || !webhookResult.ok) {
-  throw new Error("Telegram webhook не подключён: " + JSON.stringify(webhookResult));
-}
     const telegramResponse = await fetch(
       `https://api.telegram.org/bot${token}/sendMessage`,
       {
@@ -126,11 +246,11 @@ if (!webhookResponse.ok || !webhookResult.ok) {
           reply_markup: {
             inline_keyboard: [
               [
-                { text: "✅ Подтвердить", callback_data: "order_confirm" },
-                { text: "❌ Отменить", callback_data: "order_cancel" }
+                { text: "✅ Подтвердить", callback_data: `order_confirm:${order.id}` },
+                { text: "❌ Отменить", callback_data: `order_cancel:${order.id}` }
               ],
               [
-                { text: "📦 Выполнен", callback_data: "order_done" }
+                { text: "📦 Выполнен", callback_data: `order_done:${order.id}` }
               ]
             ]
           }
@@ -138,29 +258,24 @@ if (!webhookResponse.ok || !webhookResult.ok) {
       }
     );
 
-    const result = await telegramResponse.json();
+    const telegramResult = await telegramResponse.json();
 
-    if (!telegramResponse.ok || !result.ok) {
-      throw new Error("Telegram не принял заказ");
+    if (!telegramResponse.ok || !telegramResult.ok) {
+      console.error("Telegram send error:", telegramResult);
+      throw new Error("Заказ сохранён, но уведомление не отправлено");
     }
 
-    return res.status(200).json({ success: true });
+    return res.status(200).json({
+      success: true,
+      order_id: order.id,
+      total
+    });
 
   } catch (error) {
     console.error("Order error:", error);
 
     return res.status(500).json({
-      error: "Не удалось отправить заказ. Попробуйте позже."
+      error: "Не удалось оформить заказ. Попробуйте позже."
     });
   }
-}
-
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, char => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;"
-  }[char]));
 }
