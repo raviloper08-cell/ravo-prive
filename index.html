@@ -84,36 +84,34 @@ nav button.active{color:#d4af37}
  <button class="back" onclick="showCatalog()">← Назад в каталог</button>
  <div id="detailContent"></div>
 </main>
+
 <main id="profilePage" class="page">
  <button class="back" onclick="showCatalog()">← Назад в каталог</button>
  <div style="padding:20px 18px">
   <h2 style="font:22px Georgia,serif;font-weight:400">Мой аккаунт</h2>
-
   <div id="profileCard" style="background:#151515;border:1px solid #4c4025;border-radius:14px;padding:20px">
    <div id="profileStatus" style="color:#aaa;font-size:13px">Проверяем вход через Telegram...</div>
   </div>
-
   <div style="background:#151515;border:1px solid #4c4025;border-radius:14px;padding:20px;margin-top:14px">
    <h3 style="font:22px Georgia,serif;font-weight:400">RAVO BONUS</h3>
    <div id="profileBonus" style="font:28px Georgia,serif;color:#d4af37">0 ₽</div>
    <div style="color:#999;font-size:12px">Баланс бонусов</div>
   </div>
-
   <div style="background:#151515;border:1px solid #4c4025;border-radius:14px;padding:20px;margin-top:14px">
    <h3 style="font:22px Georgia,serif;font-weight:400">Мои заказы</h3>
    <div style="color:#aaa;font-size:13px">История заказов подключим следующим этапом.</div>
   </div>
-
   <div style="background:#151515;border:1px solid #4c4025;border-radius:14px;padding:20px;margin-top:14px">
    <h3 style="font:22px Georgia,serif;font-weight:400">Подписка RAVO</h3>
    <div style="color:#aaa;font-size:13px">Информация о подписке подключим следующим этапом.</div>
   </div>
  </div>
 </main>
+
 <nav>
  <button class="active" id="homeTab" onclick="showCatalog()"><span>⌂</span>Каталог</button>
  <button onclick="openCart()"><span>♧</span>Корзина <b id="count">0</b></button>
- <button onclick="showProfile()"><span>♙</span>Аккаунт</button>
+ <button id="accountTab" onclick="showProfile()"><span>♙</span>Аккаунт</button>
 </nav>
 
 <div id="cartPanel">
@@ -128,14 +126,12 @@ nav button.active{color:#d4af37}
  <button class="close" onclick="closeCheckout()">×</button>
  <h2 style="font-family:Georgia,serif;font-weight:400">Оформление заказа</h2>
  <p style="color:#aaa;font-size:13px;line-height:1.6">Оставь свои контакты. Мы свяжемся с тобой для подтверждения заказа.</p>
-
  <form id="checkoutForm" onsubmit="submitCheckout(event)">
   <input class="checkout-input" id="customerName" type="text" placeholder="Твоё имя" required maxlength="80" autocomplete="name">
   <input class="checkout-input" id="customerPhone" type="tel" placeholder="Номер телефона" required maxlength="25" autocomplete="tel">
   <div class="cartTotal" id="checkoutTotal"></div>
   <button class="add" id="submitOrder" type="submit">ОТПРАВИТЬ ЗАКАЗ</button>
  </form>
-
  <div id="checkoutMessage"></div>
  <div class="checkout-note">После отправки заказа мы свяжемся с тобой для уточнения деталей.</div>
 </div>
@@ -144,15 +140,29 @@ nav button.active{color:#d4af37}
 <script>
 const SUPABASE_URL="https://lgbzdowsplindautytov.supabase.co";
 const SUPABASE_KEY="sb_publishable_lEfYUgsaaSP1zimr0YT9Qg_37UuM6uE";
-let telegramProfile = null;
+
+let telegramProfile=null;
+let products=[];
+let selected="Все";
+let cart=[];
+let currentProduct=null;
+
 function showCatalog(){
  document.getElementById("detailPage").classList.remove("active");
  document.getElementById("profilePage").classList.remove("active");
  document.getElementById("catalogPage").classList.add("active");
  document.getElementById("homeTab").classList.add("active");
+ document.getElementById("accountTab").classList.remove("active");
  window.scrollTo(0,0);
 }
 
+function showProfile(){
+ document.getElementById("catalogPage").classList.remove("active");
+ document.getElementById("detailPage").classList.remove("active");
+ document.getElementById("profilePage").classList.add("active");
+ document.getElementById("homeTab").classList.remove("active");
+ document.getElementById("accountTab").classList.add("active");
+ window.scrollTo(0,0);
 
  if(!telegramProfile) authenticateTelegram();
 }
@@ -211,10 +221,6 @@ async function authenticateTelegram(){
   status.textContent=error.message||"Ошибка входа. Открой магазин заново через Telegram.";
  }
 }
-let products=[];
-let selected="Все";
-let cart=[];
-let currentProduct=null;
 
 async function loadProducts(){
  const box=document.getElementById("products");
@@ -295,10 +301,12 @@ function render(){
   ((p.name||"")+" "+(p.description||"")+" "+(p.category||"")).toLowerCase().includes(q)
  );
  const box=document.getElementById("products");
+
  if(!list.length){
   box.innerHTML='<div class="empty">Ничего не найдено</div>';
   return;
  }
+
  box.innerHTML=list.map(p=>`
   <article class="product" onclick="openProduct('${esc(p.id)}')">
    <img src="${safeImage(p.image_url)}" alt="${esc(p.name)}"
@@ -316,7 +324,9 @@ function render(){
 function openProduct(id){
  currentProduct=products.find(p=>String(p.id)===String(id));
  if(!currentProduct)return;
+
  const p=currentProduct;
+
  document.getElementById("detailContent").innerHTML=`
   <img class="detail-image" src="${safeImage(p.image_url)}"
    onerror="this.src='https://placehold.co/600x600/191713/d4af37?text=RAVO+PRIVE'">
@@ -332,24 +342,22 @@ function openProduct(id){
    <div class="detail-feature">Подарочный пакет: ${p.gift_bag_included?'<span class="gift">Включён</span>':'Не включён'}</div>
    <button class="add" onclick="add('${esc(p.id)}')">ДОБАВИТЬ В КОРЗИНУ</button>
   </div>`;
+
  document.getElementById("catalogPage").classList.remove("active");
+ document.getElementById("profilePage").classList.remove("active");
  document.getElementById("detailPage").classList.add("active");
  document.getElementById("homeTab").classList.remove("active");
- window.scrollTo(0,0);
-}
-
-function showCatalog(){
- document.getElementById("detailPage").classList.remove("active");
- document.getElementById("catalogPage").classList.add("active");
- document.getElementById("homeTab").classList.add("active");
+ document.getElementById("accountTab").classList.remove("active");
  window.scrollTo(0,0);
 }
 
 function add(id){
  const p=products.find(x=>String(x.id)===String(id));
  if(!p)return;
+
  cart.push(p);
  document.getElementById("count").textContent=cart.length;
+
  const b=document.querySelector("#detailContent .add");
  if(b)b.textContent="ДОБАВЛЕНО ✓";
 }
@@ -363,7 +371,9 @@ function updateCart(){
  document.getElementById("cartItems").innerHTML=cart.length?
  cart.map((p,i)=>`<div class="cartItem">${esc(p.name)} — ${money(p.price)} <button onclick="removeItem(${i})">Удалить</button></div>`).join("")
  :"<p>Корзина пока пуста</p>";
- document.getElementById("total").textContent="Итого: "+money(cart.reduce((s,p)=>s+Number(p.price||0),0));
+
+ document.getElementById("total").textContent=
+  "Итого: "+money(cart.reduce((s,p)=>s+Number(p.price||0),0));
 }
 
 function removeItem(i){
@@ -381,8 +391,10 @@ function openCheckout(){
   alert("Сначала добавь товар в корзину.");
   return;
  }
+
  document.getElementById("checkoutTotal").textContent=
   "Итого: "+money(cart.reduce((s,p)=>s+Number(p.price||0),0));
+
  document.getElementById("checkoutMessage").textContent="";
  document.getElementById("cartPanel").style.display="none";
  document.getElementById("checkoutPanel").style.display="block";
@@ -412,6 +424,7 @@ async function submitCheckout(event){
  }
 
  const quantities={};
+
  cart.forEach(p=>{
   const id=String(p.id);
   quantities[id]=(quantities[id]||0)+1;
@@ -443,6 +456,7 @@ async function submitCheckout(event){
   document.getElementById("count").textContent="0";
   updateCart();
   document.getElementById("checkoutForm").reset();
+
   message.textContent="Заказ успешно отправлен! Скоро мы свяжемся с тобой.";
   button.textContent="ЗАКАЗ ОТПРАВЛЕН ✓";
   button.disabled=true;
