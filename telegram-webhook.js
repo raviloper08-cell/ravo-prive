@@ -28,7 +28,9 @@ export default async function handler(req, res) {
 
   try {
     const callback = req.body?.callback_query;
-
+console.log("CALLBACK DATA:", callback?.data);
+console.log("CALLBACK MESSAGE ID:", callback?.message?.message_id);
+console.log("CALLBACK FULL:", JSON.stringify(callback));
     if (!callback) {
       return res.status(200).json({ ok: true });
     }
