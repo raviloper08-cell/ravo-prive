@@ -180,9 +180,13 @@ export default async function handler(req, res) {
     }
 
     const profile = profiles[0];
-
-    const orderPayload = {
-      user_id: profile.id,
+if (!profile.auth_user_id) {
+  return res.status(409).json({
+    error: "Профиль не связан с авторизацией. Перезапустите приложение."
+  });
+}
+const orderPayload = {
+  user_id: profile.auth_user_id,
       telegram_id: telegramId,
       customer_name: name.trim(),
       phone: phone.trim(),
