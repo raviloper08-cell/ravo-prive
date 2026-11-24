@@ -434,6 +434,81 @@ nav button.active{color:var(--burgundy)}
  font:400 32px 'Cormorant Garamond',serif;
  color:var(--burgundy);
 }
+ .orders-history{
+ display:flex;
+ flex-direction:column;
+ gap:13px;
+ margin-top:14px;
+}
+.order-card{
+ background:var(--white);
+ border:1px solid var(--line);
+ padding:16px;
+}
+.order-top{
+ display:flex;
+ justify-content:space-between;
+ align-items:flex-start;
+ gap:10px;
+}
+.order-number{
+ color:var(--burgundy);
+ font:500 20px 'Cormorant Garamond',serif;
+}
+.order-date{
+ color:var(--muted);
+ font-size:10px;
+ margin-top:4px;
+}
+.order-status{
+ display:inline-block;
+ padding:6px 9px;
+ border:1px solid var(--rose);
+ color:var(--burgundy);
+ font-size:9px;
+ text-align:center;
+}
+.order-status.delivered{
+ background:#E7EEE5;
+ border-color:#A8B9A1;
+ color:#52694B;
+}
+.order-status.cancelled{
+ background:#F2E5E3;
+ border-color:#D5AAA5;
+ color:#89534D;
+}
+.order-products{
+ margin-top:14px;
+ border-top:1px solid var(--line);
+}
+.order-product{
+ display:flex;
+ justify-content:space-between;
+ gap:12px;
+ padding:10px 0;
+ border-bottom:1px solid var(--line);
+ font-size:11px;
+}
+.order-product-name{color:var(--espresso)}
+.order-product-price{
+ color:var(--burgundy);
+ white-space:nowrap;
+ font-weight:700;
+}
+.order-bottom{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:10px;
+ padding-top:13px;
+ font-size:11px;
+}
+.order-total{
+ color:var(--burgundy);
+ font-weight:700;
+ font-size:14px;
+}
 @media(min-width:650px){
  body{max-width:760px;margin:auto;padding-bottom:90px}
  .products{grid-template-columns:repeat(3,1fr)}
