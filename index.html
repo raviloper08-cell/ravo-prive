@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -576,6 +575,27 @@ nav button.active{color:var(--burgundy)}
  color:var(--burgundy);
  font-size:15px;
 }
+
+/* iPhone-style navigation */
+.page.active{
+ display:block;
+ animation:ravoPageIn .28s cubic-bezier(.22,.75,.25,1) both;
+}
+@keyframes ravoPageIn{
+ from{opacity:.72;transform:translateX(18px)}
+ to{opacity:1;transform:translateX(0)}
+}
+#cartPanel,#checkoutPanel{
+ overscroll-behavior:contain;
+ -webkit-overflow-scrolling:touch;
+ animation:ravoPanelIn .28s cubic-bezier(.22,.75,.25,1) both;
+}
+@keyframes ravoPanelIn{
+ from{transform:translateX(100%)}
+ to{transform:translateX(0)}
+}
+body{overscroll-behavior-x:pan-y}
+
 </style>
 </head>
 <body>
@@ -663,7 +683,7 @@ nav button.active{color:var(--burgundy)}
   <div class="profile-muted">Загружаем историю заказов...</div>
  </div>
 </div>
- 
+
  </div>
 </main>
 
@@ -817,7 +837,7 @@ async function loadOrderHistory(){
   if(!orders.length){
    box.innerHTML='<div class="profile-muted">У тебя пока нет заказов. Самое время выбрать что-нибудь особенное в нашей коллекции.</div>';
    return;
-  }
+     }
 
   box.innerHTML=orders.map(order=>{
    const status=String(order.status||"pending").toLowerCase();
@@ -1068,7 +1088,15 @@ function openCheckout(){
  document.getElementById("checkoutPanel").style.display="block";
 }
 
-function closeCheckout(){document.getElementById("checkoutPanel").style.display="none"}
+function closeCheckout(returnToCart=true){
+ document.getElementById("checkoutPanel").style.display="none";
+ if(returnToCart){
+  document.getElementById("cartPanel").style.display="block";
+  updateCart();
+ }else{
+  document.getElementById("cartPanel").style.display="none";
+ }
+}
 
 async function submitCheckout(event){
  event.preventDefault();
@@ -1104,7 +1132,7 @@ async function submitCheckout(event){
   message.textContent="Заказ успешно отправлен! Скоро мы свяжемся с тобой.";
   button.textContent="ЗАКАЗ ОТПРАВЛЕН ✓";
   setTimeout(()=>{
-   closeCheckout();
+   closeCheckout(false);
    button.disabled=false;
    button.textContent="ОТПРАВИТЬ ЗАКАЗ";
   },2200);
@@ -1115,6 +1143,77 @@ async function submitCheckout(event){
   button.textContent="ПОПРОБОВАТЬ СНОВА";
  }
 }
+
+
+// iPhone-like edge swipe: swipe right from the left edge to go back.
+(function initRavoSwipeNavigation(){
+ let startX=0;
+ let startY=0;
+ let tracking=false;
+ let moved=false;
+
+ document.addEventListener("touchstart",event=>{
+  if(!event.touches||event.touches.length!==1)return;
+  const target=event.target;
+  if(target&&target.closest&&target.closest("input,textarea,select,.categories"))return;
+
+  const touch=event.touches[0];
+  startX=touch.clientX;
+  startY=touch.clientY;
+  tracking=startX<=38;
+  moved=false;
+ },{passive:true});
+
+ document.addEventListener("touchmove",event=>{
+  if(!tracking||!event.touches||event.touches.length!==1)return;
+  const touch=event.touches[0];
+  const dx=touch.clientX-startX;
+  const dy=touch.clientY-startY;
+
+  if(Math.abs(dy)>Math.abs(dx)*0.85){
+   tracking=false;
+   return;
+  }
+  if(dx>12)moved=true;
+  if(dx>8&&Math.abs(dx)>Math.abs(dy)*1.2){
+   event.preventDefault();
+  }
+ },{passive:false});
+
+ document.addEventListener("touchend",event=>{
+  if(!tracking)return;
+  tracking=false;
+  if(!moved)return;
+
+  const touch=event.changedTouches&&event.changedTouches[0];
+  if(!touch)return;
+  const dx=touch.clientX-startX;
+  const dy=touch.clientY-startY;
+
+  if(dx<85||Math.abs(dx)<Math.abs(dy)*1.35)return;
+
+  const checkout=document.getElementById("checkoutPanel");
+  const cartPanel=document.getElementById("cartPanel");
+  const detail=document.getElementById("detailPage");
+  const profile=document.getElementById("profilePage");
+
+  if(checkout&&checkout.style.display==="block"){
+   closeCheckout(true);
+   return;
+  }
+  if(cartPanel&&cartPanel.style.display==="block"){
+   closeCart();
+   return;
+  }
+  if(detail&&detail.classList.contains("active")){
+   showCatalog();
+   return;
+  }
+  if(profile&&profile.classList.contains("active")){
+   showCatalog();
+  }
+ },{passive:true});
+})();
 
 loadProducts();
 authenticateTelegram();
