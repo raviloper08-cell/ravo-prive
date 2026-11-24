@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -10,600 +11,120 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
- --ivory:#F0E8E3;
- --paper:#F8F4F0;
- --sand:#D2BDAA;
- --rose:#B58D91;
- --burgundy:#704D55;
- --espresso:#332D2C;
- --muted:#91847D;
- --line:#DFD2C9;
- --white:#FFFCF9;
+ --ivory:#F0E8E3;--paper:#F8F4F0;--sand:#D2BDAA;--rose:#B58D91;
+ --burgundy:#704D55;--espresso:#332D2C;--muted:#91847D;
+ --line:#DFD2C9;--white:#FFFCF9;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{
- margin:0;
- background:var(--ivory);
- color:var(--espresso);
- font-family:'Manrope',sans-serif;
- padding-bottom:95px;
- -webkit-font-smoothing:antialiased;
-}
+body{margin:0;background:var(--ivory);color:var(--espresso);font-family:'Manrope',sans-serif;padding-bottom:95px;-webkit-font-smoothing:antialiased;overscroll-behavior-x:pan-y}
 button,input{font-family:inherit}
 button{cursor:pointer}
 .page{display:none}
-.page.active{display:block}
-header{
- padding:20px 22px 15px;
- text-align:center;
- background:var(--paper);
- border-bottom:1px solid var(--line);
-}
-.header-top{
- display:flex;
- justify-content:space-between;
- align-items:center;
- margin-bottom:12px;
- color:var(--muted);
- font-size:9px;
- letter-spacing:2px;
-}
-.logo{
- font-family:'Cormorant Garamond',serif;
- font-size:31px;
- font-weight:600;
- letter-spacing:5px;
- color:var(--burgundy);
-}
-.sub{
- font-size:8px;
- letter-spacing:4px;
- color:var(--muted);
- margin-top:4px;
-}
-.hero{
- margin:15px;
- background:var(--burgundy);
- color:var(--ivory);
- overflow:hidden;
- position:relative;
-}
-.hero-image{
- width:100%;
- height:210px;
- object-fit:cover;
- display:block;
- opacity:.88;
-}
+.page.active{display:block;animation:ravoPageIn .28s cubic-bezier(.22,.75,.25,1) both}
+@keyframes ravoPageIn{from{opacity:.72;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
+header{padding:20px 22px 15px;text-align:center;background:var(--paper);border-bottom:1px solid var(--line)}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;color:var(--muted);font-size:9px;letter-spacing:2px}
+.logo{font-family:'Cormorant Garamond',serif;font-size:31px;font-weight:600;letter-spacing:5px;color:var(--burgundy)}
+.sub{font-size:8px;letter-spacing:4px;color:var(--muted);margin-top:4px}
+.hero{margin:15px;background:var(--burgundy);color:var(--ivory);overflow:hidden;position:relative}
+.hero-image{width:100%;height:210px;object-fit:cover;display:block;opacity:.88}
 .hero-content{padding:24px 21px 26px}
-.eyebrow{
- font-size:9px;
- letter-spacing:3px;
- color:var(--sand);
-}
-.hero h1{
- font-family:'Cormorant Garamond',serif;
- font-weight:400;
- font-size:43px;
- line-height:.98;
- margin:17px 0 12px;
-}
-.hero p{
- color:#E9DCD5;
- font-size:11px;
- line-height:1.9;
- max-width:280px;
-}
-.hero-link{
- display:inline-block;
- margin-top:12px;
- border-bottom:1px solid var(--sand);
- padding-bottom:7px;
- font-size:9px;
- letter-spacing:2px;
- color:var(--ivory);
-}
+.eyebrow{font-size:9px;letter-spacing:3px;color:var(--sand)}
+.hero h1{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:43px;line-height:.98;margin:17px 0 12px}
+.hero p{color:#E9DCD5;font-size:11px;line-height:1.9;max-width:280px}
+.hero-link{display:inline-block;margin-top:12px;border-bottom:1px solid var(--sand);padding-bottom:7px;font-size:9px;letter-spacing:2px;color:var(--ivory)}
 .section{padding:20px 20px 12px}
-.section-top{
- display:flex;
- justify-content:space-between;
- align-items:end;
- gap:10px;
-}
-.section h2{
- font:400 30px 'Cormorant Garamond',serif;
- color:var(--burgundy);
- margin:0;
-}
-.section small{
- color:var(--muted);
- font-size:9px;
- letter-spacing:1px;
-}
+.section-top{display:flex;justify-content:space-between;align-items:end;gap:10px}
+.section h2{font:400 30px 'Cormorant Garamond',serif;color:var(--burgundy);margin:0}
+.section small{color:var(--muted);font-size:9px;letter-spacing:1px}
 .search{padding:8px 16px 14px}
-.search input{
- width:100%;
- padding:14px 16px;
- border:1px solid var(--line);
- background:var(--paper);
- border-radius:0;
- color:var(--espresso);
- font-size:12px;
- outline:none;
-}
+.search input{width:100%;padding:14px 16px;border:1px solid var(--line);background:var(--paper);border-radius:0;color:var(--espresso);font-size:12px;outline:none}
 .search input:focus{border-color:var(--burgundy)}
-.categories{
- display:flex;
- gap:9px;
- overflow:auto;
- padding:5px 16px 17px;
- scrollbar-width:none;
-}
+.categories{display:flex;gap:9px;overflow:auto;padding:5px 16px 17px;scrollbar-width:none}
 .categories::-webkit-scrollbar{display:none}
-.categories button{
- flex-shrink:0;
- background:transparent;
- border:1px solid var(--line);
- color:var(--burgundy);
- padding:10px 15px;
- font-size:9px;
- letter-spacing:1.3px;
-}
-.categories button.active{
- background:var(--burgundy);
- color:var(--ivory);
- border-color:var(--burgundy);
-}
-.products{
- display:grid;
- grid-template-columns:1fr 1fr;
- gap:20px 12px;
- padding:0 15px;
-}
-.product{
- background:transparent;
- cursor:pointer;
- min-width:0;
-}
-.product-image-wrap{
- position:relative;
- background:#E5D9D0;
- overflow:hidden;
-}
-.product img{
- width:100%;
- aspect-ratio: .84;
- object-fit:cover;
- display:block;
- transition:transform .45s ease;
-}
+.categories button{flex-shrink:0;background:transparent;border:1px solid var(--line);color:var(--burgundy);padding:10px 15px;font-size:9px;letter-spacing:1.3px}
+.categories button.active{background:var(--burgundy);color:var(--ivory);border-color:var(--burgundy)}
+.products{display:grid;grid-template-columns:1fr 1fr;gap:20px 12px;padding:0 15px}
+.product{background:transparent;cursor:pointer;min-width:0}
+.product-image-wrap{position:relative;background:#E5D9D0;overflow:hidden}
+.product img{width:100%;aspect-ratio:.84;object-fit:cover;display:block;transition:transform .45s ease}
 .product:active img{transform:scale(1.035)}
 .info{padding:11px 2px 5px}
-.brand{
- font-size:8px;
- color:var(--rose);
- letter-spacing:2px;
- text-transform:uppercase;
-}
-.name{
- font:500 20px 'Cormorant Garamond',serif;
- color:var(--burgundy);
- margin:5px 0;
- min-height:24px;
-}
-.price{
- font-size:12px;
- font-weight:700;
- color:var(--espresso);
-}
-.old{
- font-size:10px;
- color:var(--muted);
- text-decoration:line-through;
- margin-left:6px;
-}
-.status,.empty{
- grid-column:1/-1;
- text-align:center;
- color:var(--muted);
- padding:35px 15px;
- font-size:12px;
-}
-.collection-note{
- margin:30px 15px;
- padding:26px 20px;
- text-align:center;
- background:var(--paper);
- border:1px solid var(--line);
-}
+.brand{font-size:8px;color:var(--rose);letter-spacing:2px;text-transform:uppercase}
+.name{font:500 20px 'Cormorant Garamond',serif;color:var(--burgundy);margin:5px 0;min-height:24px}
+.price{font-size:12px;font-weight:700;color:var(--espresso)}
+.old{font-size:10px;color:var(--muted);text-decoration:line-through;margin-left:6px}
+.status,.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:35px 15px;font-size:12px}
+.collection-note{margin:30px 15px;padding:26px 20px;text-align:center;background:var(--paper);border:1px solid var(--line)}
 .collection-note .eyebrow{color:var(--rose)}
-.collection-note h2{
- font:400 32px 'Cormorant Garamond',serif;
- color:var(--burgundy);
- margin:12px 0;
-}
-.collection-note p{
- font-size:11px;
- line-height:1.8;
- color:var(--muted);
-}
-footer{
- text-align:center;
- padding:25px 15px 15px;
- color:var(--muted);
- font-size:9px;
- letter-spacing:2px;
-}
-nav{
- position:fixed;
- bottom:0;left:0;right:0;
- background:rgba(248,244,240,.97);
- backdrop-filter:blur(15px);
- border-top:1px solid var(--line);
- display:flex;
- justify-content:space-around;
- padding:12px 5px calc(12px + env(safe-area-inset-bottom));
- z-index:5;
-}
-nav button{
- background:none;
- border:0;
- color:var(--muted);
- font-size:9px;
- letter-spacing:.5px;
- min-width:65px;
-}
-nav button span{
- display:block;
- font-size:20px;
- margin-bottom:4px;
-}
+.collection-note h2{font:400 32px 'Cormorant Garamond',serif;color:var(--burgundy);margin:12px 0}
+.collection-note p{font-size:11px;line-height:1.8;color:var(--muted)}
+footer{text-align:center;padding:25px 15px 15px;color:var(--muted);font-size:9px;letter-spacing:2px}
+nav{position:fixed;bottom:0;left:0;right:0;background:rgba(248,244,240,.97);backdrop-filter:blur(15px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:12px 5px calc(12px + env(safe-area-inset-bottom));z-index:5}
+nav button{background:none;border:0;color:var(--muted);font-size:9px;letter-spacing:.5px;min-width:65px}
+nav button span{display:block;font-size:20px;margin-bottom:4px}
 nav button.active{color:var(--burgundy)}
-.back{
- display:inline-flex;
- align-items:center;
- gap:8px;
- color:var(--burgundy);
- background:none;
- border:0;
- padding:19px;
- font-size:11px;
- letter-spacing:1px;
-}
-.detail-image{
- width:calc(100% - 36px);
- margin:0 18px;
- aspect-ratio:1/1;
- object-fit:cover;
- background:#E5D9D0;
-}
+.back{display:inline-flex;align-items:center;gap:8px;color:var(--burgundy);background:none;border:0;padding:19px;font-size:11px;letter-spacing:1px}
+.detail-image{width:calc(100% - 36px);margin:0 18px;aspect-ratio:1/1;object-fit:cover;background:#E5D9D0}
 .detail-content{padding:22px}
-.detail-brand{
- color:var(--rose);
- font-size:9px;
- letter-spacing:3px;
-}
-.detail-title{
- font:400 38px 'Cormorant Garamond',serif;
- color:var(--burgundy);
- margin:12px 0;
-}
+.detail-brand{color:var(--rose);font-size:9px;letter-spacing:3px}
+.detail-title{font:400 38px 'Cormorant Garamond',serif;color:var(--burgundy);margin:12px 0}
 .detail-price{font-size:17px;font-weight:700}
-.detail-old{
- font-size:12px;
- color:var(--muted);
- text-decoration:line-through;
- margin-left:8px;
-}
-.detail-description{
- font-size:12px;
- color:var(--muted);
- line-height:1.9;
- margin:22px 0;
-}
-.detail-label{
- color:var(--rose);
- font-size:9px;
- letter-spacing:2px;
- margin-top:24px;
-}
-.detail-feature{
- padding:13px 0;
- border-bottom:1px solid var(--line);
- color:var(--espresso);
- font-size:11px;
-}
+.detail-old{font-size:12px;color:var(--muted);text-decoration:line-through;margin-left:8px}
+.detail-description{font-size:12px;color:var(--muted);line-height:1.9;margin:22px 0}
+.detail-label{color:var(--rose);font-size:9px;letter-spacing:2px;margin-top:24px}
+.detail-feature{padding:13px 0;border-bottom:1px solid var(--line);color:var(--espresso);font-size:11px}
 .gift{color:var(--burgundy)}
-.add{
- width:100%;
- padding:17px;
- background:var(--burgundy);
- color:var(--ivory);
- border:0;
- font-size:10px;
- font-weight:700;
- letter-spacing:2px;
- margin-top:22px;
-}
+.add{width:100%;padding:17px;background:var(--burgundy);color:var(--ivory);border:0;font-size:10px;font-weight:700;letter-spacing:2px;margin-top:22px}
 .add:disabled{opacity:.5;cursor:wait}
-#cartPanel,#checkoutPanel{
- display:none;
- position:fixed;
- inset:0;
- background:var(--ivory);
- z-index:10;
- padding:25px 18px;
- overflow:auto;
-}
-.close{
- float:right;
- background:none;
- color:var(--burgundy);
- border:0;
- font-size:28px;
-}
-.cartItem{
- padding:15px 0;
- border-bottom:1px solid var(--line);
- font-size:12px;
- overflow:hidden;
-}
-.cartItem button{
- float:right;
- background:none;
- color:var(--burgundy);
- border:0;
- font-size:11px;
-}
-.cartTotal{
- font:500 25px 'Cormorant Garamond',serif;
- color:var(--burgundy);
- margin:25px 0;
-}
-.checkout-input{
- display:block;
- width:100%;
- padding:15px;
- margin:13px 0;
- background:var(--paper);
- border:1px solid var(--line);
- color:var(--espresso);
- font-size:13px;
- outline:none;
-}
+#cartPanel,#checkoutPanel{display:none;position:fixed;inset:0;background:var(--ivory);z-index:10;padding:25px 18px;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;animation:ravoPanelIn .28s cubic-bezier(.22,.75,.25,1) both}
+@keyframes ravoPanelIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.close{float:right;background:none;color:var(--burgundy);border:0;font-size:28px}
+.cartItem{padding:15px 0;border-bottom:1px solid var(--line);font-size:12px;overflow:hidden}
+.cartItem button{float:right;background:none;color:var(--burgundy);border:0;font-size:11px}
+.cartTotal{font:500 25px 'Cormorant Garamond',serif;color:var(--burgundy);margin:25px 0}
+.checkout-input{display:block;width:100%;padding:15px;margin:13px 0;background:var(--paper);border:1px solid var(--line);color:var(--espresso);font-size:13px;outline:none}
 .checkout-input:focus{border-color:var(--burgundy)}
-.checkout-note{
- font-size:11px;
- color:var(--muted);
- line-height:1.8;
- margin-top:15px;
-}
-#checkoutMessage{
- font-size:12px;
- color:var(--burgundy);
- line-height:1.6;
- margin-top:14px;
-}
-.profile-box{
- background:var(--paper);
- border:1px solid var(--line);
- padding:20px;
- margin-top:14px;
-}
-.profile-heading{
- font:400 25px 'Cormorant Garamond',serif;
- color:var(--burgundy);
- margin:0 0 17px;
-}
-.profile-muted{
- color:var(--muted);
- font-size:11px;
- line-height:1.7;
-}
-.profile-stat{
- font:400 34px 'Cormorant Garamond',serif;
- color:var(--burgundy);
- margin-top:8px;
-}
-.profile-line{
- display:flex;
- justify-content:space-between;
- gap:12px;
- padding:12px 0;
- border-bottom:1px solid var(--line);
- font-size:11px;
-}
+.checkout-note{font-size:11px;color:var(--muted);line-height:1.8;margin-top:15px}
+#checkoutMessage{font-size:12px;color:var(--burgundy);line-height:1.6;margin-top:14px}
+.profile-box{background:var(--paper);border:1px solid var(--line);padding:20px;margin-top:14px}
+.profile-heading{font:400 25px 'Cormorant Garamond',serif;color:var(--burgundy);margin:0 0 17px}
+.profile-muted{color:var(--muted);font-size:11px;line-height:1.7}
+.profile-stat{font:400 34px 'Cormorant Garamond',serif;color:var(--burgundy);margin-top:8px}
+.profile-line{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:11px}
 .profile-line:last-child{border-bottom:0}
 .profile-line span:first-child{color:var(--muted)}
-.profile-line span:last-child{
- text-align:right;
- overflow-wrap:anywhere;
- color:var(--espresso);
-}
-.profile-status{
- display:inline-block;
- padding:6px 10px;
- border:1px solid var(--rose);
- color:var(--burgundy);
- font-size:10px;
-}
+.profile-line span:last-child{text-align:right;overflow-wrap:anywhere;color:var(--espresso)}
+.profile-status{display:inline-block;padding:6px 10px;border:1px solid var(--rose);color:var(--burgundy);font-size:10px}
 .profile-page-inner{padding:20px 18px}
-.profile-title{
- font:400 32px 'Cormorant Garamond',serif;
- color:var(--burgundy);
-}
-.orders-history{
- display:flex;
- flex-direction:column;
- gap:13px;
- margin-top:14px;
-}
-.order-card{
- background:var(--white);
- border:1px solid var(--line);
- padding:16px;
-}
-.order-top{
- display:flex;
- justify-content:space-between;
- align-items:flex-start;
- gap:10px;
-}
-.order-number{
- color:var(--burgundy);
- font:500 20px 'Cormorant Garamond',serif;
-}
-.order-date{
- color:var(--muted);
- font-size:10px;
- margin-top:4px;
-}
-.order-status{
- display:inline-block;
- padding:6px 9px;
- border:1px solid var(--rose);
- color:var(--burgundy);
- font-size:9px;
- text-align:center;
-}
-.order-status.delivered{
- background:#E7EEE5;
- border-color:#A8B9A1;
- color:#52694B;
-}
-.order-status.cancelled{
- background:#F2E5E3;
- border-color:#D5AAA5;
- color:#89534D;
-}
-.order-products{
- margin-top:14px;
- border-top:1px solid var(--line);
-}
-.order-product{
- display:flex;
- justify-content:space-between;
- gap:12px;
- padding:10px 0;
- border-bottom:1px solid var(--line);
- font-size:11px;
-}
-.order-product-name{color:var(--espresso)}
-.order-product-price{
- color:var(--burgundy);
- white-space:nowrap;
- font-weight:700;
-}
-.order-bottom{
- display:flex;
- justify-content:space-between;
- align-items:center;
- gap:10px;
- padding-top:13px;
- font-size:11px;
-}
-.order-total{
- color:var(--burgundy);
- font-weight:700;
- font-size:14px;
-}
+.profile-title{font:400 32px 'Cormorant Garamond',serif;color:var(--burgundy)}
+.orders-history{display:flex;flex-direction:column;gap:13px;margin-top:14px}
+.order-card{background:var(--white);border:1px solid var(--line);padding:16px;margin-top:13px}
+.order-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding-bottom:13px;border-bottom:1px solid var(--line)}
+.order-number{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--burgundy);overflow-wrap:anywhere}
+.order-date{font-size:10px;color:var(--muted);margin-top:6px}
+.order-status{display:inline-block;border:1px solid;padding:6px 8px;font-size:9px;text-align:center;line-height:1.4}
+.order-status.delivered{background:#E7EEE5;border-color:#A8B9A1;color:#52694B}
+.order-status.cancelled{background:#F2E5E3;border-color:#D5AAA5;color:#89534D}
+.order-products{padding:8px 0}
+.order-product{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:9px 0;font-size:10px;border-bottom:1px solid var(--line)}
+.order-product-name{overflow-wrap:anywhere;color:var(--espresso)}
+.order-product-price{color:var(--burgundy);white-space:nowrap;font-weight:700}
+.order-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:13px;font-size:11px;color:var(--muted)}
+.order-total{color:var(--burgundy);font-weight:700;font-size:14px}
 @media(min-width:650px){
  body{max-width:760px;margin:auto;padding-bottom:90px}
  .products{grid-template-columns:repeat(3,1fr)}
  .hero{margin:22px}
  .hero-image{height:290px}
 }
-.order-card{
- background:var(--white);
- border:1px solid var(--line);
- padding:16px;
- margin-top:13px;
-}
-.order-top{
- display:flex;
- justify-content:space-between;
- align-items:flex-start;
- gap:10px;
- padding-bottom:13px;
- border-bottom:1px solid var(--line);
-}
-.order-number{
- font-size:10px;
- font-weight:700;
- letter-spacing:1px;
- color:var(--burgundy);
- overflow-wrap:anywhere;
-}
-.order-date{
- font-size:10px;
- color:var(--muted);
- margin-top:6px;
-}
-.order-status{
- display:inline-block;
- border:1px solid;
- padding:6px 8px;
- font-size:9px;
- text-align:center;
- line-height:1.4;
-}
-.order-products{padding:8px 0}
-.order-product{
- display:grid;
- grid-template-columns:1fr auto auto;
- gap:10px;
- align-items:center;
- padding:9px 0;
- font-size:10px;
- border-bottom:1px solid var(--line);
-}
-.order-product span:first-child{
- overflow-wrap:anywhere;
-}
-.order-product span:nth-child(2){color:var(--muted)}
-.order-product b{white-space:nowrap}
-.order-bottom{
- display:flex;
- justify-content:space-between;
- align-items:center;
- padding-top:13px;
- font-size:11px;
- color:var(--muted);
-}
-.order-bottom strong{
- color:var(--burgundy);
- font-size:15px;
-}
-
-/* iPhone-style navigation */
-.page.active{
- display:block;
- animation:ravoPageIn .28s cubic-bezier(.22,.75,.25,1) both;
-}
-@keyframes ravoPageIn{
- from{opacity:.72;transform:translateX(18px)}
- to{opacity:1;transform:translateX(0)}
-}
-#cartPanel,#checkoutPanel{
- overscroll-behavior:contain;
- -webkit-overflow-scrolling:touch;
- animation:ravoPanelIn .28s cubic-bezier(.22,.75,.25,1) both;
-}
-@keyframes ravoPanelIn{
- from{transform:translateX(100%)}
- to{transform:translateX(0)}
-}
-body{overscroll-behavior-x:pan-y}
 </style>
 </head>
 <body>
 
 <header>
- <div class="header-top">
-  <span>EST. 2026</span>
-  <span>OFFICIAL BOUTIQUE</span>
- </div>
+ <div class="header-top"><span>EST. 2026</span><span>OFFICIAL BOUTIQUE</span></div>
  <div class="logo">RAVO PRIVÉ</div>
  <div class="sub">THE ART OF CHOOSING</div>
 </header>
@@ -619,28 +140,15 @@ body{overscroll-behavior-x:pan-y}
   </div>
  </section>
 
- <div class="section">
-  <div class="section-top">
-   <h2>Selected for you</h2>
-   <small>CURATED COLLECTION</small>
-  </div>
- </div>
-
- <div class="search">
-  <input id="search" placeholder="⌕  Найти свою находку..." oninput="render()">
- </div>
-
+ <div class="section"><div class="section-top"><h2>Selected for you</h2><small>CURATED COLLECTION</small></div></div>
+ <div class="search"><input id="search" placeholder="⌕  Найти свою находку..." oninput="render()"></div>
  <div class="categories" id="categories"></div>
- <div class="products" id="products">
-  <div class="status">Загружаем коллекцию...</div>
- </div>
-
+ <div class="products" id="products"><div class="status">Загружаем коллекцию...</div></div>
  <section class="collection-note">
   <div class="eyebrow">THE RAVO EXPERIENCE</div>
   <h2>More than shopping.</h2>
   <p>Мы верим, что стиль складывается из деталей. Открой для себя коллекцию RAVO PRIVÉ.</p>
  </section>
-
  <footer>RAVO PRIVÉ · THE ART OF CHOOSING</footer>
 </main>
 
@@ -653,35 +161,26 @@ body{overscroll-behavior-x:pan-y}
  <button class="back" onclick="showCatalog()">← НАЗАД</button>
  <div class="profile-page-inner">
   <h2 class="profile-title">Мой аккаунт</h2>
-
-  <div id="profileCard" class="profile-box">
-   <div id="profileStatus" class="profile-muted">Проверяем вход через Telegram...</div>
-  </div>
-
+  <div id="profileCard" class="profile-box"><div id="profileStatus" class="profile-muted">Проверяем вход через Telegram...</div></div>
   <div class="profile-box">
    <h3 class="profile-heading">RAVO BONUS</h3>
    <div id="profileBonus" class="profile-stat">0 ₽</div>
    <div class="profile-muted">Твой бонусный баланс</div>
   </div>
-
   <div class="profile-box">
    <h3 class="profile-heading">Моя статистика</h3>
    <div class="profile-line"><span>Всего заказов</span><span id="profileOrders">0</span></div>
    <div class="profile-line"><span>Потрачено всего</span><span id="profileSpent">0 ₽</span></div>
   </div>
-
   <div class="profile-box">
    <h3 class="profile-heading">Подписка RAVO</h3>
    <div class="profile-line"><span>Тариф</span><span id="subscriptionPlan">Без подписки</span></div>
    <div class="profile-line"><span>Статус</span><span id="subscriptionStatus" class="profile-status">Не активна</span></div>
    <div class="profile-line"><span>Действует до</span><span id="subscriptionExpires">—</span></div>
   </div>
-
   <div class="profile-box">
    <h3 class="profile-heading">Мои заказы</h3>
-   <div id="ordersHistory" class="orders-history">
-    <div class="profile-muted">Загружаем историю заказов...</div>
-   </div>
+   <div id="ordersHistory" class="orders-history"><div class="profile-muted">Загружаем историю заказов...</div></div>
   </div>
  </div>
 </main>
@@ -733,10 +232,7 @@ function showCatalog(){
  document.getElementById("catalogPage").classList.add("active");
  document.getElementById("homeTab").classList.add("active");
  document.getElementById("accountTab").classList.remove("active");
-
- requestAnimationFrame(()=>{
-  window.scrollTo(0,catalogScrollY);
- });
+ requestAnimationFrame(()=>window.scrollTo(0,catalogScrollY));
 }
 
 function showProfile(){
@@ -746,9 +242,8 @@ function showProfile(){
  document.getElementById("homeTab").classList.remove("active");
  document.getElementById("accountTab").classList.add("active");
  window.scrollTo(0,0);
-
- if(!telegramProfile&&!authLoading) authenticateTelegram();
- else if(telegramProfile) loadOrderHistory();
+ if(!telegramProfile&&!authLoading)authenticateTelegram();
+ else if(telegramProfile)loadOrderHistory();
 }
 
 function formatDate(value){
@@ -763,11 +258,24 @@ function getPlanName(plan){
  return names[String(plan||"none").toLowerCase()]||String(plan);
 }
 
+// Подставляем ранее сохранённые контакты в форму оформления.
+function fillCheckoutContacts(){
+ if(!telegramProfile)return;
+ const nameInput=document.getElementById("customerName");
+ const phoneInput=document.getElementById("customerPhone");
+ if(nameInput&&!nameInput.value.trim()&&telegramProfile.customer_name){
+  nameInput.value=telegramProfile.customer_name;
+ }
+ if(phoneInput&&!phoneInput.value.trim()&&telegramProfile.phone){
+  phoneInput.value=telegramProfile.phone;
+ }
+}
+
 function displayProfile(profile){
  const fullName=[profile.first_name,profile.last_name].filter(Boolean).join(" ")||"Покупатель RAVO";
  const avatar=profile.photo_url
- ? '<img src="'+esc(profile.photo_url)+'" alt="" style="width:58px;height:58px;border-radius:50%;object-fit:cover;border:1px solid var(--rose)">'
- : '<div style="width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:var(--sand);color:var(--burgundy);font-size:25px">♙</div>';
+ ?'<img src="'+esc(profile.photo_url)+'" alt="" style="width:58px;height:58px;border-radius:50%;object-fit:cover;border:1px solid var(--rose)">'
+ :'<div style="width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:var(--sand);color:var(--burgundy);font-size:25px">♙</div>';
 
  document.getElementById("profileCard").innerHTML=
  '<div style="display:flex;align-items:center;gap:14px">'+avatar+
@@ -794,115 +302,66 @@ function displayProfile(profile){
 }
 
 function getOrderStatus(status){
- const statuses={
-  pending:"Ожидает подтверждения",
-  processing:"Собирается",
-  cancelled:"Отменён",
-  delivered:"Доставлен"
- };
+ const statuses={pending:"Ожидает подтверждения",processing:"Собирается",cancelled:"Отменён",delivered:"Доставлен"};
  return statuses[String(status||"pending").toLowerCase()]||"В обработке";
 }
 
 async function loadOrderHistory(){
  const box=document.getElementById("ordersHistory");
  const tg=window.Telegram&&window.Telegram.WebApp;
-
  if(!tg||!tg.initData){
   box.innerHTML='<div class="profile-muted">Открой магазин через Telegram, чтобы увидеть свои заказы.</div>';
   return;
  }
-
  box.innerHTML='<div class="profile-muted">Загружаем историю заказов...</div>';
-
  try{
   const response=await fetch("/api/my-orders",{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
+   method:"POST",headers:{"Content-Type":"application/json"},
    body:JSON.stringify({initData:tg.initData})
   });
-
   const result=await response.json();
-
-  if(!response.ok||!result.success){
-   throw new Error(result.error||"Не удалось загрузить заказы.");
-  }
-
+  if(!response.ok||!result.success)throw new Error(result.error||"Не удалось загрузить заказы.");
   const orders=Array.isArray(result.orders)?result.orders:[];
-
-  document.getElementById("profileOrders").textContent=
-   orders.length.toLocaleString("ru-RU");
-
+  document.getElementById("profileOrders").textContent=orders.length.toLocaleString("ru-RU");
   const spent=orders.reduce((sum,order)=>{
    if(String(order.status).toLowerCase()==="cancelled")return sum;
    return sum+Number(order.total_amount||0);
   },0);
-
   document.getElementById("profileSpent").textContent=money(spent);
-
   if(!orders.length){
    box.innerHTML='<div class="profile-muted">У тебя пока нет заказов. Самое время выбрать что-нибудь особенное в нашей коллекции.</div>';
    return;
   }
-
   box.innerHTML=orders.map(order=>{
    const status=String(order.status||"pending").toLowerCase();
    const statusClass=status==="delivered"?"delivered":status==="cancelled"?"cancelled":"";
    const orderNumber=String(order.id||"").slice(-8).toUpperCase();
-   const date=order.created_at
-    ?new Date(order.created_at).toLocaleString("ru-RU",{
-      day:"numeric",
-      month:"long",
-      year:"numeric",
-      hour:"2-digit",
-      minute:"2-digit"
-     })
-    :"Дата не указана";
-
+   const date=order.created_at?new Date(order.created_at).toLocaleString("ru-RU",{
+    day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"
+   }):"Дата не указана";
    let items=order.items||[];
-   if(typeof items==="string"){
-    try{items=JSON.parse(items)}catch(e){items=[]}
-   }
-
+   if(typeof items==="string"){try{items=JSON.parse(items)}catch(e){items=[]}}
    const productsHtml=Array.isArray(items)&&items.length
     ?items.map(item=>`
       <div class="order-product">
-       <div class="order-product-name">
-        ${esc(item.name||"Товар")}
-        <span style="color:var(--muted)"> × ${Number(item.quantity||1)}</span>
-       </div>
+       <div class="order-product-name">${esc(item.name||"Товар")} <span style="color:var(--muted)"> × ${Number(item.quantity||1)}</span></div>
        <div class="order-product-price">${money(item.total??(Number(item.price||0)*Number(item.quantity||1)))}</div>
-      </div>
-     `).join("")
+      </div>`).join("")
     :'<div class="profile-muted">Информация о товарах отсутствует.</div>';
-
    return `
     <div class="order-card">
      <div class="order-top">
-      <div>
-       <div class="order-number">Заказ №${esc(orderNumber)}</div>
-       <div class="order-date">${esc(date)}</div>
-      </div>
-      <div class="order-status ${statusClass}">
-       ${esc(getOrderStatus(status))}
-      </div>
+      <div><div class="order-number">Заказ №${esc(orderNumber)}</div><div class="order-date">${esc(date)}</div></div>
+      <div class="order-status ${statusClass}">${esc(getOrderStatus(status))}</div>
      </div>
      <div class="order-products">${productsHtml}</div>
-     <div class="order-bottom">
-      <span style="color:var(--muted)">Итого</span>
-      <span class="order-total">${money(order.total_amount)}</span>
-     </div>
-    </div>
-   `;
+     <div class="order-bottom"><span style="color:var(--muted)">Итого</span><span class="order-total">${money(order.total_amount)}</span></div>
+    </div>`;
   }).join("");
-
  }catch(error){
   console.error("RAVO ORDER HISTORY:",error);
-  box.innerHTML=`
-   <div class="profile-muted">
-    Не удалось загрузить заказы. ${esc(error.message)}
-   </div>
-   <button class="add" onclick="loadOrderHistory()">ПОПРОБОВАТЬ СНОВА</button>
-  `;
+  box.innerHTML=`<div class="profile-muted">Не удалось загрузить заказы. ${esc(error.message)}</div>
+   <button class="add" onclick="loadOrderHistory()">ПОПРОБОВАТЬ СНОВА</button>`;
  }
 }
 
@@ -911,26 +370,23 @@ async function authenticateTelegram(){
  authLoading=true;
  const status=document.getElementById("profileStatus");
  const tg=window.Telegram&&window.Telegram.WebApp;
-
  if(!tg||!tg.initData){
   status.textContent="Открой магазин через кнопку меню нашего Telegram-бота, чтобы войти.";
   authLoading=false;
   return;
  }
-
  try{
-  tg.ready();
-  tg.expand();
+  tg.ready();tg.expand();
   status.textContent="Подключаем аккаунт...";
   const response=await fetch("/api/auth",{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
+   method:"POST",headers:{"Content-Type":"application/json"},
    body:JSON.stringify({initData:tg.initData})
   });
   const result=await response.json();
   if(!response.ok||!result.success||!result.profile)throw new Error(result.error||"Не удалось выполнить вход.");
   telegramProfile=result.profile;
   displayProfile(telegramProfile);
+  fillCheckoutContacts();
   loadOrderHistory();
  }catch(error){
   console.error(error);
@@ -946,18 +402,12 @@ async function loadProducts(){
  try{
   const response=await fetch(
    SUPABASE_URL+"/rest/v1/products?select=id,name,description,price,old_price,category,image_url,is_active,gift_bag_included&is_active=eq.true&order=created_at.desc",
-   {method:"GET",headers:{
-    "apikey":SUPABASE_KEY,
-    "Authorization":"Bearer "+SUPABASE_KEY,
-    "Accept":"application/json"
-   }}
+   {method:"GET",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Accept":"application/json"}}
   );
   const data=await response.json();
   if(!response.ok)throw new Error(data.message||JSON.stringify(data));
   if(!Array.isArray(data))throw new Error("База вернула неправильный ответ");
-  products=data;
-  buildCategories();
-  render();
+  products=data;buildCategories();render();
  }catch(e){
   console.error("RAVO ERROR:",e);
   box.innerHTML='<div class="status">Ошибка: '+esc(e.message)+'</div>';
@@ -965,12 +415,7 @@ async function loadProducts(){
 }
 
 function categoryLabel(cat){
- const labels={
-  "Все":"ALL",
-  "Парфюмерия":"FRAGRANCE",
-  "Косметика":"BEAUTY",
-  "Аксессуары":"ACCESSORIES"
- };
+ const labels={"Все":"ALL","Парфюмерия":"FRAGRANCE","Косметика":"BEAUTY","Аксессуары":"ACCESSORIES"};
  return labels[cat]||cat.toUpperCase();
 }
 
@@ -987,17 +432,10 @@ function buildCategories(){
  });
 }
 
-function filter(cat){
- selected=cat;
- buildCategories();
- render();
-}
+function filter(cat){selected=cat;buildCategories();render()}
 
 function safeImage(url){
- try{
-  const u=new URL(url);
-  if(u.protocol==="https:"||u.protocol==="http:")return u.href;
- }catch(e){}
+ try{const u=new URL(url);if(u.protocol==="https:"||u.protocol==="http:")return u.href}catch(e){}
  return "https://placehold.co/600x700/E5D9D0/704D55?text=RAVO+PRIVE";
 }
 
@@ -1005,9 +443,7 @@ function esc(s){
  return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
-function money(n){
- return Number(n||0).toLocaleString("ru-RU")+" ₽";
-}
+function money(n){return Number(n||0).toLocaleString("ru-RU")+" ₽"}
 
 function render(){
  const q=document.getElementById("search").value.toLowerCase();
@@ -1016,15 +452,11 @@ function render(){
   ((p.name||"")+" "+(p.description||"")+" "+(p.category||"")).toLowerCase().includes(q)
  );
  const box=document.getElementById("products");
- if(!list.length){
-  box.innerHTML='<div class="empty">Коллекция скоро пополнится.</div>';
-  return;
- }
+ if(!list.length){box.innerHTML='<div class="empty">Коллекция скоро пополнится.</div>';return}
  box.innerHTML=list.map(p=>`
   <article class="product" onclick="openProduct('${esc(p.id)}')">
    <div class="product-image-wrap">
-    <img src="${safeImage(p.image_url)}" alt="${esc(p.name)}"
-     onerror="this.src='https://placehold.co/600x700/E5D9D0/704D55?text=RAVO+PRIVE'">
+    <img src="${safeImage(p.image_url)}" alt="${esc(p.name)}" onerror="this.src='https://placehold.co/600x700/E5D9D0/704D55?text=RAVO+PRIVE'">
    </div>
    <div class="info">
     <div class="brand">${esc(categoryLabel(p.category||"RAVO PRIVÉ"))}</div>
@@ -1036,14 +468,11 @@ function render(){
 
 function openProduct(id){
  catalogScrollY=window.scrollY;
-
  currentProduct=products.find(p=>String(p.id)===String(id));
  if(!currentProduct)return;
-
  const p=currentProduct;
  document.getElementById("detailContent").innerHTML=`
-  <img class="detail-image" src="${safeImage(p.image_url)}"
-   onerror="this.src='https://placehold.co/600x700/E5D9D0/704D55?text=RAVO+PRIVE'">
+  <img class="detail-image" src="${safeImage(p.image_url)}" onerror="this.src='https://placehold.co/600x700/E5D9D0/704D55?text=RAVO+PRIVE'">
   <div class="detail-content">
    <div class="detail-brand">${esc(categoryLabel(p.category||"RAVO PRIVÉ"))}</div>
    <h1 class="detail-title">${esc(p.name)}</h1>
@@ -1054,13 +483,11 @@ function openProduct(id){
    <div class="detail-feature">Подарочный пакет: ${p.gift_bag_included?'<span class="gift">Включён</span>':'Не включён'}</div>
    <button class="add" onclick="add('${esc(p.id)}')">ДОБАВИТЬ В КОРЗИНУ</button>
   </div>`;
-
  document.getElementById("catalogPage").classList.remove("active");
  document.getElementById("profilePage").classList.remove("active");
  document.getElementById("detailPage").classList.add("active");
  document.getElementById("homeTab").classList.remove("active");
  document.getElementById("accountTab").classList.remove("active");
-
  window.scrollTo(0,0);
 }
 
@@ -1079,8 +506,8 @@ function openCart(){
 }
 
 function updateCart(){
- document.getElementById("cartItems").innerHTML=cart.length?
- cart.map((p,i)=>`<div class="cartItem">${esc(p.name)} — ${money(p.price)} <button onclick="removeItem(${i})">Удалить</button></div>`).join("")
+ document.getElementById("cartItems").innerHTML=cart.length
+ ?cart.map((p,i)=>`<div class="cartItem">${esc(p.name)} — ${money(p.price)} <button onclick="removeItem(${i})">Удалить</button></div>`).join("")
  :"<p class='profile-muted'>Твоя корзина пока пуста.</p>";
  document.getElementById("total").textContent="Итого: "+money(cart.reduce((s,p)=>s+Number(p.price||0),0));
 }
@@ -1091,56 +518,41 @@ function removeItem(i){
  updateCart();
 }
 
-function closeCart(){
- document.getElementById("cartPanel").style.display="none";
-}
+function closeCart(){document.getElementById("cartPanel").style.display="none"}
 
 function openCheckout(){
- if(!cart.length){
-  alert("Сначала добавь товар в корзину.");
-  return;
- }
+ if(!cart.length){alert("Сначала добавь товар в корзину.");return}
  document.getElementById("checkoutTotal").textContent="Итого: "+money(cart.reduce((s,p)=>s+Number(p.price||0),0));
  document.getElementById("checkoutMessage").textContent="";
  document.getElementById("cartPanel").style.display="none";
  document.getElementById("checkoutPanel").style.display="block";
+ fillCheckoutContacts();
+ // Если авторизация ещё загружается, после её завершения контакты также подставятся.
+ if(!telegramProfile&&!authLoading)authenticateTelegram();
 }
 
 function closeCheckout(returnToCart=true){
  document.getElementById("checkoutPanel").style.display="none";
- if(returnToCart){
-  document.getElementById("cartPanel").style.display="block";
-  updateCart();
- }else{
-  document.getElementById("cartPanel").style.display="none";
- }
+ if(returnToCart){document.getElementById("cartPanel").style.display="block";updateCart()}
+ else document.getElementById("cartPanel").style.display="none";
 }
 
 async function submitCheckout(event){
  event.preventDefault();
-
- if(!cart.length){
-  alert("Корзина пуста.");
-  closeCheckout();
-  return;
- }
+ if(!cart.length){alert("Корзина пуста.");closeCheckout();return}
 
  const button=document.getElementById("submitOrder");
  const message=document.getElementById("checkoutMessage");
  const name=document.getElementById("customerName").value.trim();
  const phone=document.getElementById("customerPhone").value.trim();
 
- if(!name||!phone){
-  message.textContent="Заполни имя и номер телефона.";
-  return;
- }
+ if(!name||!phone){message.textContent="Заполни имя и номер телефона.";return}
 
  const quantities={};
  cart.forEach(p=>{
   const id=String(p.id);
   quantities[id]=(quantities[id]||0)+1;
  });
-
  const items=Object.entries(quantities).map(([id,quantity])=>({id,quantity}));
 
  button.disabled=true;
@@ -1152,32 +564,31 @@ async function submitCheckout(event){
   const response=await fetch("/api/order",{
    method:"POST",
    headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({
-    name,
-    phone,
-    items,
-    initData:tg?tg.initData:""
-   })
+   body:JSON.stringify({name,phone,items,initData:tg?tg.initData:""})
   });
-
   let result={};
   try{result=await response.json()}catch(e){}
+  if(!response.ok||!result.success)throw new Error(result.error||"Не удалось отправить заказ. Попробуй ещё раз.");
 
-  if(!response.ok||!result.success){
-   throw new Error(result.error||"Не удалось отправить заказ. Попробуй ещё раз.");
+  // Обновляем данные в памяти приложения после успешного заказа.
+  // Сервер уже сохранил эти контакты в profiles.
+  if(telegramProfile){
+   telegramProfile.customer_name=name;
+   telegramProfile.phone=phone;
   }
 
   cart=[];
   document.getElementById("count").textContent="0";
   updateCart();
-  document.getElementById("checkoutForm").reset();
   message.textContent="Заказ успешно отправлен! Скоро мы свяжемся с тобой.";
   button.textContent="ЗАКАЗ ОТПРАВЛЕН ✓";
 
   setTimeout(()=>{
-   closeCheckout(false);
+   document.getElementById("checkoutPanel").style.display="none";
+   document.getElementById("cartPanel").style.display="none";
    button.disabled=false;
    button.textContent="ОТПРАВИТЬ ЗАКАЗ";
+   document.getElementById("checkoutForm").reset();
   },2200);
 
  }catch(error){
@@ -1188,56 +599,36 @@ async function submitCheckout(event){
  }
 }
 
-// iPhone-like edge swipe: swipe right from the left edge to go back.
+// Возврат свайпом вправо от левого края экрана.
 (function initRavoSwipeNavigation(){
- let startX=0;
- let startY=0;
- let tracking=false;
- let moved=false;
-
+ let startX=0,startY=0,tracking=false,moved=false;
  document.addEventListener("touchstart",event=>{
   if(!event.touches||event.touches.length!==1)return;
-
   const target=event.target;
   if(target&&target.closest&&target.closest("input,textarea,select,.categories"))return;
-
   const touch=event.touches[0];
-  startX=touch.clientX;
-  startY=touch.clientY;
-  tracking=startX<=38;
-  moved=false;
+  startX=touch.clientX;startY=touch.clientY;
+  tracking=startX<=38;moved=false;
  },{passive:true});
 
  document.addEventListener("touchmove",event=>{
   if(!tracking||!event.touches||event.touches.length!==1)return;
-
   const touch=event.touches[0];
   const dx=touch.clientX-startX;
   const dy=touch.clientY-startY;
-
-  if(Math.abs(dy)>Math.abs(dx)*0.85){
-   tracking=false;
-   return;
-  }
-
+  if(Math.abs(dy)>Math.abs(dx)*.85){tracking=false;return}
   if(dx>12)moved=true;
-
-  if(dx>8&&Math.abs(dx)>Math.abs(dy)*1.2){
-   event.preventDefault();
-  }
+  if(dx>8&&Math.abs(dx)>Math.abs(dy)*1.2)event.preventDefault();
  },{passive:false});
 
  document.addEventListener("touchend",event=>{
   if(!tracking)return;
   tracking=false;
   if(!moved)return;
-
   const touch=event.changedTouches&&event.changedTouches[0];
   if(!touch)return;
-
   const dx=touch.clientX-startX;
   const dy=touch.clientY-startY;
-
   if(dx<85||Math.abs(dx)<Math.abs(dy)*1.35)return;
 
   const checkout=document.getElementById("checkoutPanel");
@@ -1245,24 +636,10 @@ async function submitCheckout(event){
   const detail=document.getElementById("detailPage");
   const profile=document.getElementById("profilePage");
 
-  if(checkout&&checkout.style.display==="block"){
-   closeCheckout(true);
-   return;
-  }
-
-  if(cartPanel&&cartPanel.style.display==="block"){
-   closeCart();
-   return;
-  }
-
-  if(detail&&detail.classList.contains("active")){
-   showCatalog();
-   return;
-  }
-
-  if(profile&&profile.classList.contains("active")){
-   showCatalog();
-  }
+  if(checkout&&checkout.style.display==="block"){closeCheckout(true);return}
+  if(cartPanel&&cartPanel.style.display==="block"){closeCart();return}
+  if(detail&&detail.classList.contains("active")){showCatalog();return}
+  if(profile&&profile.classList.contains("active"))showCatalog();
  },{passive:true});
 })();
 
