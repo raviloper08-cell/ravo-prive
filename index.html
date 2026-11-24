@@ -596,11 +596,13 @@ nav button.active{color:var(--burgundy)}
    <div class="profile-line"><span>Статус</span><span id="subscriptionStatus" class="profile-status">Не активна</span></div>
    <div class="profile-line"><span>Действует до</span><span id="subscriptionExpires">—</span></div>
   </div>
-
-  <div class="profile-box">
-   <h3 class="profile-heading">Мои заказы</h3>
-   <div class="profile-muted">Количество заказов отображается по данным аккаунта. Историю заказов подключим отдельно.</div>
-  </div>
+<div class="profile-box">
+ <h3 class="profile-heading">Мои заказы</h3>
+ <div id="ordersHistory" class="orders-history">
+  <div class="profile-muted">Загружаем историю заказов...</div>
+ </div>
+</div>
+ 
  </div>
 </main>
 
