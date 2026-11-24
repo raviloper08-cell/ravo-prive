@@ -4,103 +4,503 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>RAVO PRIVÉ</title>
+<meta name="theme-color" content="#F0E8E3">
+<title>RAVO PRIVÉ — The Art of Choosing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+:root{
+ --ivory:#F0E8E3;
+ --paper:#F8F4F0;
+ --sand:#D2BDAA;
+ --rose:#B58D91;
+ --burgundy:#704D55;
+ --espresso:#332D2C;
+ --muted:#91847D;
+ --line:#DFD2C9;
+ --white:#FFFCF9;
+}
 *{box-sizing:border-box}
-body{margin:0;background:#0b0b0b;color:#f5f1e8;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;padding-bottom:85px}
-button{font-family:inherit;cursor:pointer}
-header{text-align:center;padding:24px 15px 18px;border-bottom:1px solid #29251b}
-.logo{font:29px Georgia,serif;letter-spacing:4px;color:#d4af37}
-.sub{font-size:9px;letter-spacing:4px;color:#aaa;margin-top:7px}
-.hero{margin:18px;padding:27px 20px;background:linear-gradient(135deg,#292216,#101010 75%);border:1px solid #594820;border-radius:14px}
-.hero small{color:#d4af37;letter-spacing:3px;font-size:10px}
-.hero h1{font:30px Georgia,serif;font-weight:400;line-height:1.2}
-.hero p{color:#aaa;font-size:13px;line-height:1.6}
-.section{padding:8px 18px}
-.section h2{font:23px Georgia,serif;font-weight:400}
-.search{padding:0 18px 15px}
-.search input{width:100%;padding:15px;border:1px solid #39332a;border-radius:10px;background:#151515;color:white;font-size:14px;outline:none}
-.categories{display:flex;gap:9px;overflow:auto;padding:0 18px 17px;scrollbar-width:none}
-.categories button{white-space:nowrap;border:1px solid #4c4025;background:#151515;color:#d4af37;border-radius:30px;padding:10px 15px}
-.categories button.active{background:#d4af37;color:#111}
-.products{display:grid;grid-template-columns:1fr 1fr;gap:13px;padding:0 15px}
-.product{background:#151515;border:1px solid #29251f;border-radius:12px;overflow:hidden;cursor:pointer}
-.product img{width:100%;aspect-ratio:1/1;object-fit:cover;background:#191713;display:block}
-.info{padding:11px}
-.brand{font-size:9px;color:#d4af37;letter-spacing:2px}
-.name{font:16px Georgia,serif;margin:7px 0;min-height:38px}
-.price{font-size:16px;font-weight:700}
-.old{font-size:12px;color:#888;text-decoration:line-through;margin-left:6px}
-.status,.empty{grid-column:1/-1;text-align:center;color:#999;padding:30px 15px}
-nav{position:fixed;bottom:0;left:0;right:0;background:#111;border-top:1px solid #39332a;display:flex;justify-content:space-around;padding:12px 5px calc(12px + env(safe-area-inset-bottom));z-index:5}
-nav button{background:none;border:0;color:#aaa;font-size:12px}
-nav button span{display:block;font-size:21px;margin-bottom:4px}
-nav button.active{color:#d4af37}
+html{scroll-behavior:smooth}
+body{
+ margin:0;
+ background:var(--ivory);
+ color:var(--espresso);
+ font-family:'Manrope',sans-serif;
+ padding-bottom:95px;
+ -webkit-font-smoothing:antialiased;
+}
+button,input{font-family:inherit}
+button{cursor:pointer}
 .page{display:none}
 .page.active{display:block}
-.back{display:inline-flex;align-items:center;gap:8px;color:#d4af37;background:none;border:0;padding:18px;font-size:14px}
-.detail-image{width:calc(100% - 36px);margin:0 18px;border-radius:13px;aspect-ratio:1/1;object-fit:cover;background:#191713}
-.detail-content{padding:20px}
-.detail-brand{color:#d4af37;font-size:11px;letter-spacing:3px}
-.detail-title{font:30px Georgia,serif;font-weight:400;margin:12px 0}
-.detail-price{font-size:25px;font-weight:700;margin:12px 0}
-.detail-old{font-size:15px;color:#888;text-decoration:line-through;margin-left:8px}
-.detail-description{font-size:14px;color:#bbb;line-height:1.7;margin:20px 0}
-.detail-label{color:#d4af37;font-size:11px;letter-spacing:2px;margin-top:24px}
-.detail-feature{padding:13px 0;border-bottom:1px solid #29251b;color:#ddd;font-size:14px}
-.add{width:100%;padding:16px;background:#d4af37;color:#111;border:0;border-radius:9px;font-weight:800;letter-spacing:1px;margin-top:22px}
-.gift{color:#d4af37}
-#cartPanel,#checkoutPanel{display:none;position:fixed;inset:0;background:#0b0b0b;z-index:10;padding:25px 18px;overflow:auto}
-.close{float:right;background:none;color:#d4af37;border:0;font-size:27px}
-.cartItem{padding:15px 0;border-bottom:1px solid #333;font-size:14px;overflow:hidden}
-.cartItem button{float:right;background:none;color:#d4af37;border:0}
-.cartTotal{font-size:21px;margin:25px 0}
-.checkout-input{display:block;width:100%;padding:16px;margin:13px 0;background:#151515;border:1px solid #39332a;border-radius:9px;color:white;font-size:15px;outline:none}
-.checkout-note{font-size:12px;color:#999;line-height:1.6;margin-top:15px}
-#checkoutMessage{font-size:13px;color:#d4af37;line-height:1.5;margin-top:14px}
+header{
+ padding:20px 22px 15px;
+ text-align:center;
+ background:var(--paper);
+ border-bottom:1px solid var(--line);
+}
+.header-top{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ margin-bottom:12px;
+ color:var(--muted);
+ font-size:9px;
+ letter-spacing:2px;
+}
+.logo{
+ font-family:'Cormorant Garamond',serif;
+ font-size:31px;
+ font-weight:600;
+ letter-spacing:5px;
+ color:var(--burgundy);
+}
+.sub{
+ font-size:8px;
+ letter-spacing:4px;
+ color:var(--muted);
+ margin-top:4px;
+}
+.hero{
+ margin:15px;
+ background:var(--burgundy);
+ color:var(--ivory);
+ overflow:hidden;
+ position:relative;
+}
+.hero-image{
+ width:100%;
+ height:210px;
+ object-fit:cover;
+ display:block;
+ opacity:.88;
+}
+.hero-content{padding:24px 21px 26px}
+.eyebrow{
+ font-size:9px;
+ letter-spacing:3px;
+ color:var(--sand);
+}
+.hero h1{
+ font-family:'Cormorant Garamond',serif;
+ font-weight:400;
+ font-size:43px;
+ line-height:.98;
+ margin:17px 0 12px;
+}
+.hero p{
+ color:#E9DCD5;
+ font-size:11px;
+ line-height:1.9;
+ max-width:280px;
+}
+.hero-link{
+ display:inline-block;
+ margin-top:12px;
+ border-bottom:1px solid var(--sand);
+ padding-bottom:7px;
+ font-size:9px;
+ letter-spacing:2px;
+ color:var(--ivory);
+}
+.section{padding:20px 20px 12px}
+.section-top{
+ display:flex;
+ justify-content:space-between;
+ align-items:end;
+ gap:10px;
+}
+.section h2{
+ font:400 30px 'Cormorant Garamond',serif;
+ color:var(--burgundy);
+ margin:0;
+}
+.section small{
+ color:var(--muted);
+ font-size:9px;
+ letter-spacing:1px;
+}
+.search{padding:8px 16px 14px}
+.search input{
+ width:100%;
+ padding:14px 16px;
+ border:1px solid var(--line);
+ background:var(--paper);
+ border-radius:0;
+ color:var(--espresso);
+ font-size:12px;
+ outline:none;
+}
+.search input:focus{border-color:var(--burgundy)}
+.categories{
+ display:flex;
+ gap:9px;
+ overflow:auto;
+ padding:5px 16px 17px;
+ scrollbar-width:none;
+}
+.categories::-webkit-scrollbar{display:none}
+.categories button{
+ flex-shrink:0;
+ background:transparent;
+ border:1px solid var(--line);
+ color:var(--burgundy);
+ padding:10px 15px;
+ font-size:9px;
+ letter-spacing:1.3px;
+}
+.categories button.active{
+ background:var(--burgundy);
+ color:var(--ivory);
+ border-color:var(--burgundy);
+}
+.products{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:20px 12px;
+ padding:0 15px;
+}
+.product{
+ background:transparent;
+ cursor:pointer;
+ min-width:0;
+}
+.product-image-wrap{
+ position:relative;
+ background:#E5D9D0;
+ overflow:hidden;
+}
+.product img{
+ width:100%;
+ aspect-ratio: .84;
+ object-fit:cover;
+ display:block;
+ transition:transform .45s ease;
+}
+.product:active img{transform:scale(1.035)}
+.info{padding:11px 2px 5px}
+.brand{
+ font-size:8px;
+ color:var(--rose);
+ letter-spacing:2px;
+ text-transform:uppercase;
+}
+.name{
+ font:500 20px 'Cormorant Garamond',serif;
+ color:var(--burgundy);
+ margin:5px 0;
+ min-height:24px;
+}
+.price{
+ font-size:12px;
+ font-weight:700;
+ color:var(--espresso);
+}
+.old{
+ font-size:10px;
+ color:var(--muted);
+ text-decoration:line-through;
+ margin-left:6px;
+}
+.status,.empty{
+ grid-column:1/-1;
+ text-align:center;
+ color:var(--muted);
+ padding:35px 15px;
+ font-size:12px;
+}
+.collection-note{
+ margin:30px 15px;
+ padding:26px 20px;
+ text-align:center;
+ background:var(--paper);
+ border:1px solid var(--line);
+}
+.collection-note .eyebrow{color:var(--rose)}
+.collection-note h2{
+ font:400 32px 'Cormorant Garamond',serif;
+ color:var(--burgundy);
+ margin:12px 0;
+}
+.collection-note p{
+ font-size:11px;
+ line-height:1.8;
+ color:var(--muted);
+}
+footer{
+ text-align:center;
+ padding:25px 15px 15px;
+ color:var(--muted);
+ font-size:9px;
+ letter-spacing:2px;
+}
+nav{
+ position:fixed;
+ bottom:0;left:0;right:0;
+ background:rgba(248,244,240,.97);
+ backdrop-filter:blur(15px);
+ border-top:1px solid var(--line);
+ display:flex;
+ justify-content:space-around;
+ padding:12px 5px calc(12px + env(safe-area-inset-bottom));
+ z-index:5;
+}
+nav button{
+ background:none;
+ border:0;
+ color:var(--muted);
+ font-size:9px;
+ letter-spacing:.5px;
+ min-width:65px;
+}
+nav button span{
+ display:block;
+ font-size:20px;
+ margin-bottom:4px;
+}
+nav button.active{color:var(--burgundy)}
+.back{
+ display:inline-flex;
+ align-items:center;
+ gap:8px;
+ color:var(--burgundy);
+ background:none;
+ border:0;
+ padding:19px;
+ font-size:11px;
+ letter-spacing:1px;
+}
+.detail-image{
+ width:calc(100% - 36px);
+ margin:0 18px;
+ aspect-ratio:1/1;
+ object-fit:cover;
+ background:#E5D9D0;
+}
+.detail-content{padding:22px}
+.detail-brand{
+ color:var(--rose);
+ font-size:9px;
+ letter-spacing:3px;
+}
+.detail-title{
+ font:400 38px 'Cormorant Garamond',serif;
+ color:var(--burgundy);
+ margin:12px 0;
+}
+.detail-price{font-size:17px;font-weight:700}
+.detail-old{
+ font-size:12px;
+ color:var(--muted);
+ text-decoration:line-through;
+ margin-left:8px;
+}
+.detail-description{
+ font-size:12px;
+ color:var(--muted);
+ line-height:1.9;
+ margin:22px 0;
+}
+.detail-label{
+ color:var(--rose);
+ font-size:9px;
+ letter-spacing:2px;
+ margin-top:24px;
+}
+.detail-feature{
+ padding:13px 0;
+ border-bottom:1px solid var(--line);
+ color:var(--espresso);
+ font-size:11px;
+}
+.gift{color:var(--burgundy)}
+.add{
+ width:100%;
+ padding:17px;
+ background:var(--burgundy);
+ color:var(--ivory);
+ border:0;
+ font-size:10px;
+ font-weight:700;
+ letter-spacing:2px;
+ margin-top:22px;
+}
 .add:disabled{opacity:.5;cursor:wait}
-.profile-box{background:#151515;border:1px solid #4c4025;border-radius:14px;padding:20px;margin-top:14px}
-.profile-heading{font:22px Georgia,serif;font-weight:400;margin:0 0 17px}
-.profile-muted{color:#999;font-size:12px;line-height:1.6}
-.profile-stat{font:25px Georgia,serif;color:#d4af37;margin-top:8px}
-.profile-line{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #29251b;font-size:13px}
+#cartPanel,#checkoutPanel{
+ display:none;
+ position:fixed;
+ inset:0;
+ background:var(--ivory);
+ z-index:10;
+ padding:25px 18px;
+ overflow:auto;
+}
+.close{
+ float:right;
+ background:none;
+ color:var(--burgundy);
+ border:0;
+ font-size:28px;
+}
+.cartItem{
+ padding:15px 0;
+ border-bottom:1px solid var(--line);
+ font-size:12px;
+ overflow:hidden;
+}
+.cartItem button{
+ float:right;
+ background:none;
+ color:var(--burgundy);
+ border:0;
+ font-size:11px;
+}
+.cartTotal{
+ font:500 25px 'Cormorant Garamond',serif;
+ color:var(--burgundy);
+ margin:25px 0;
+}
+.checkout-input{
+ display:block;
+ width:100%;
+ padding:15px;
+ margin:13px 0;
+ background:var(--paper);
+ border:1px solid var(--line);
+ color:var(--espresso);
+ font-size:13px;
+ outline:none;
+}
+.checkout-input:focus{border-color:var(--burgundy)}
+.checkout-note{
+ font-size:11px;
+ color:var(--muted);
+ line-height:1.8;
+ margin-top:15px;
+}
+#checkoutMessage{
+ font-size:12px;
+ color:var(--burgundy);
+ line-height:1.6;
+ margin-top:14px;
+}
+.profile-box{
+ background:var(--paper);
+ border:1px solid var(--line);
+ padding:20px;
+ margin-top:14px;
+}
+.profile-heading{
+ font:400 25px 'Cormorant Garamond',serif;
+ color:var(--burgundy);
+ margin:0 0 17px;
+}
+.profile-muted{
+ color:var(--muted);
+ font-size:11px;
+ line-height:1.7;
+}
+.profile-stat{
+ font:400 34px 'Cormorant Garamond',serif;
+ color:var(--burgundy);
+ margin-top:8px;
+}
+.profile-line{
+ display:flex;
+ justify-content:space-between;
+ gap:12px;
+ padding:12px 0;
+ border-bottom:1px solid var(--line);
+ font-size:11px;
+}
 .profile-line:last-child{border-bottom:0}
-.profile-line span:first-child{color:#999}
-.profile-line span:last-child{text-align:right;overflow-wrap:anywhere}
-.profile-status{display:inline-block;padding:6px 10px;border:1px solid #594820;border-radius:20px;color:#d4af37;font-size:11px}
+.profile-line span:first-child{color:var(--muted)}
+.profile-line span:last-child{
+ text-align:right;
+ overflow-wrap:anywhere;
+ color:var(--espresso);
+}
+.profile-status{
+ display:inline-block;
+ padding:6px 10px;
+ border:1px solid var(--rose);
+ color:var(--burgundy);
+ font-size:10px;
+}
+.profile-page-inner{padding:20px 18px}
+.profile-title{
+ font:400 32px 'Cormorant Garamond',serif;
+ color:var(--burgundy);
+}
+@media(min-width:650px){
+ body{max-width:760px;margin:auto;padding-bottom:90px}
+ .products{grid-template-columns:repeat(3,1fr)}
+ .hero{margin:22px}
+ .hero-image{height:290px}
+}
 </style>
 </head>
 <body>
 
 <header>
+ <div class="header-top">
+  <span>EST. 2026</span>
+  <span>OFFICIAL BOUTIQUE</span>
+ </div>
  <div class="logo">RAVO PRIVÉ</div>
- <div class="sub">THE WORLD OF FRAGRANCES</div>
+ <div class="sub">THE ART OF CHOOSING</div>
 </header>
 
 <main id="catalogPage" class="page active">
  <section class="hero">
-  <small>DISCOVER YOUR SIGNATURE</small>
-  <h1>Твой аромат.<br>Твои правила.</h1>
-  <p>Открой мир парфюмерии вместе с RAVO PRIVÉ.</p>
+  <img class="hero-image" src="https://images.unsplash.com/photo-1594035910387-fea47794261f?w=1000&q=85" alt="RAVO PRIVÉ fragrance collection">
+  <div class="hero-content">
+   <div class="eyebrow">A WORLD OF ELEGANCE</div>
+   <h1>Искусство<br>быть собой.</h1>
+   <p>Ароматы, детали и особенные находки, которые отражают твою индивидуальность.</p>
+   <div class="hero-link" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">DISCOVER THE COLLECTION ↗</div>
+  </div>
  </section>
- <div class="section"><h2>Каталог ароматов</h2></div>
- <div class="search"><input id="search" placeholder="⌕  Найти аромат..." oninput="render()"></div>
+
+ <div class="section">
+  <div class="section-top">
+   <h2>Selected for you</h2>
+   <small>CURATED COLLECTION</small>
+  </div>
+ </div>
+
+ <div class="search">
+  <input id="search" placeholder="⌕  Найти свою находку..." oninput="render()">
+ </div>
+
  <div class="categories" id="categories"></div>
- <div class="products" id="products"><div class="status">Загружаем каталог...</div></div>
+ <div class="products" id="products">
+  <div class="status">Загружаем коллекцию...</div>
+ </div>
+
+ <section class="collection-note">
+  <div class="eyebrow">THE RAVO EXPERIENCE</div>
+  <h2>More than shopping.</h2>
+  <p>Мы верим, что стиль складывается из деталей. Открой для себя коллекцию RAVO PRIVÉ.</p>
+ </section>
+
+ <footer>RAVO PRIVÉ · THE ART OF CHOOSING</footer>
 </main>
 
 <main id="detailPage" class="page">
- <button class="back" onclick="showCatalog()">← Назад в каталог</button>
+ <button class="back" onclick="showCatalog()">← НАЗАД К КОЛЛЕКЦИИ</button>
  <div id="detailContent"></div>
 </main>
 
 <main id="profilePage" class="page">
- <button class="back" onclick="showCatalog()">← Назад в каталог</button>
- <div style="padding:20px 18px">
-  <h2 style="font:22px Georgia,serif;font-weight:400">Мой аккаунт</h2>
+ <button class="back" onclick="showCatalog()">← НАЗАД</button>
+ <div class="profile-page-inner">
+  <h2 class="profile-title">Мой аккаунт</h2>
 
   <div id="profileCard" class="profile-box">
-   <div id="profileStatus" style="color:#aaa;font-size:13px">Проверяем вход через Telegram...</div>
+   <div id="profileStatus" class="profile-muted">Проверяем вход через Telegram...</div>
   </div>
 
   <div class="profile-box">
@@ -111,30 +511,15 @@ nav button.active{color:#d4af37}
 
   <div class="profile-box">
    <h3 class="profile-heading">Моя статистика</h3>
-   <div class="profile-line">
-    <span>Всего заказов</span>
-    <span id="profileOrders">0</span>
-   </div>
-   <div class="profile-line">
-    <span>Потрачено всего</span>
-    <span id="profileSpent">0 ₽</span>
-   </div>
+   <div class="profile-line"><span>Всего заказов</span><span id="profileOrders">0</span></div>
+   <div class="profile-line"><span>Потрачено всего</span><span id="profileSpent">0 ₽</span></div>
   </div>
 
   <div class="profile-box">
    <h3 class="profile-heading">Подписка RAVO</h3>
-   <div class="profile-line">
-    <span>Тариф</span>
-    <span id="subscriptionPlan">Без подписки</span>
-   </div>
-   <div class="profile-line">
-    <span>Статус</span>
-    <span id="subscriptionStatus" class="profile-status">Не активна</span>
-   </div>
-   <div class="profile-line">
-    <span>Действует до</span>
-    <span id="subscriptionExpires">—</span>
-   </div>
+   <div class="profile-line"><span>Тариф</span><span id="subscriptionPlan">Без подписки</span></div>
+   <div class="profile-line"><span>Статус</span><span id="subscriptionStatus" class="profile-status">Не активна</span></div>
+   <div class="profile-line"><span>Действует до</span><span id="subscriptionExpires">—</span></div>
   </div>
 
   <div class="profile-box">
@@ -145,14 +530,14 @@ nav button.active{color:#d4af37}
 </main>
 
 <nav>
- <button class="active" id="homeTab" onclick="showCatalog()"><span>⌂</span>Каталог</button>
+ <button class="active" id="homeTab" onclick="showCatalog()"><span>⌂</span>Коллекция</button>
  <button onclick="openCart()"><span>♧</span>Корзина <b id="count">0</b></button>
  <button id="accountTab" onclick="showProfile()"><span>♙</span>Аккаунт</button>
 </nav>
 
 <div id="cartPanel">
  <button class="close" onclick="closeCart()">×</button>
- <h2 style="font-family:Georgia,serif;font-weight:400">Моя корзина</h2>
+ <h2 class="profile-title">Моя корзина</h2>
  <div id="cartItems"></div>
  <div class="cartTotal" id="total"></div>
  <button class="add" onclick="openCheckout()">ОФОРМИТЬ ЗАКАЗ</button>
@@ -160,8 +545,8 @@ nav button.active{color:#d4af37}
 
 <div id="checkoutPanel">
  <button class="close" onclick="closeCheckout()">×</button>
- <h2 style="font-family:Georgia,serif;font-weight:400">Оформление заказа</h2>
- <p style="color:#aaa;font-size:13px;line-height:1.6">Оставь свои контакты. Мы свяжемся с тобой для подтверждения заказа.</p>
+ <h2 class="profile-title">Оформление заказа</h2>
+ <p class="profile-muted">Оставь свои контакты. Мы свяжемся с тобой для подтверждения заказа.</p>
  <form id="checkoutForm" onsubmit="submitCheckout(event)">
   <input class="checkout-input" id="customerName" type="text" placeholder="Твоё имя" required maxlength="80" autocomplete="name">
   <input class="checkout-input" id="customerPhone" type="tel" placeholder="Номер телефона" required maxlength="25" autocomplete="tel">
@@ -200,7 +585,6 @@ function showProfile(){
  document.getElementById("homeTab").classList.remove("active");
  document.getElementById("accountTab").classList.add("active");
  window.scrollTo(0,0);
-
  if(!telegramProfile&&!authLoading) authenticateTelegram();
 }
 
@@ -208,43 +592,30 @@ function formatDate(value){
  if(!value)return "—";
  const date=new Date(value);
  if(Number.isNaN(date.getTime()))return "—";
- return date.toLocaleDateString("ru-RU",{
-  day:"numeric",month:"long",year:"numeric"
- });
+ return date.toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"});
 }
 
 function getPlanName(plan){
- const names={
-  none:"Без подписки",
-  basic:"BASIC",
-  premium:"PREMIUM",
-  premium_plus:"PREMIUM PLUS"
- };
+ const names={none:"Без подписки",basic:"BASIC",premium:"PREMIUM",premium_plus:"PREMIUM PLUS"};
  return names[String(plan||"none").toLowerCase()]||String(plan);
 }
 
 function displayProfile(profile){
- const fullName=[
-  profile.first_name,
-  profile.last_name
- ].filter(Boolean).join(" ")||"Покупатель RAVO";
-
+ const fullName=[profile.first_name,profile.last_name].filter(Boolean).join(" ")||"Покупатель RAVO";
  const avatar=profile.photo_url
-  ? '<img src="'+esc(profile.photo_url)+'" alt="" style="width:58px;height:58px;border-radius:50%;object-fit:cover;border:1px solid #d4af37">'
-  : '<div style="width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#292216;color:#d4af37;font-size:25px">♙</div>';
+ ? '<img src="'+esc(profile.photo_url)+'" alt="" style="width:58px;height:58px;border-radius:50%;object-fit:cover;border:1px solid var(--rose)">'
+ : '<div style="width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:var(--sand);color:var(--burgundy);font-size:25px">♙</div>';
 
  document.getElementById("profileCard").innerHTML=
-  '<div style="display:flex;align-items:center;gap:14px">'+
-  avatar+
-  '<div><div style="font:21px Georgia,serif">'+esc(fullName)+'</div>'+
-  '<div style="color:#999;font-size:12px;margin-top:5px">'+
-  (profile.username?'@'+esc(profile.username):'Аккаунт Telegram')+
-  '</div></div></div>'+
-  '<p class="profile-muted">Аккаунт успешно подключён к RAVO PRIVÉ.</p>';
+ '<div style="display:flex;align-items:center;gap:14px">'+avatar+
+ '<div><div style="font:24px Cormorant Garamond,serif;color:var(--burgundy)">'+esc(fullName)+'</div>'+
+ '<div style="color:var(--muted);font-size:11px;margin-top:5px">'+
+ (profile.username?'@'+esc(profile.username):'Аккаунт Telegram')+
+ '</div></div></div>'+
+ '<p class="profile-muted">Аккаунт успешно подключён к RAVO PRIVÉ.</p>';
 
  document.getElementById("profileBonus").textContent=money(profile.bonus_balance);
- document.getElementById("profileOrders").textContent=
-  Number(profile.total_orders||0).toLocaleString("ru-RU");
+ document.getElementById("profileOrders").textContent=Number(profile.total_orders||0).toLocaleString("ru-RU");
  document.getElementById("profileSpent").textContent=money(profile.total_spent);
 
  const plan=profile.subscription_plan||"none";
@@ -255,15 +626,13 @@ function displayProfile(profile){
  const active=status==="active"&&!expired;
 
  document.getElementById("subscriptionPlan").textContent=getPlanName(plan);
- document.getElementById("subscriptionStatus").textContent=
-  active?"Активна":(expired?"Истекла":"Не активна");
+ document.getElementById("subscriptionStatus").textContent=active?"Активна":(expired?"Истекла":"Не активна");
  document.getElementById("subscriptionExpires").textContent=formatDate(expiry);
 }
 
 async function authenticateTelegram(){
  if(authLoading)return;
  authLoading=true;
-
  const status=document.getElementById("profileStatus");
  const tg=window.Telegram&&window.Telegram.WebApp;
 
@@ -277,65 +646,53 @@ async function authenticateTelegram(){
   tg.ready();
   tg.expand();
   status.textContent="Подключаем аккаунт...";
-
   const response=await fetch("/api/auth",{
    method:"POST",
    headers:{"Content-Type":"application/json"},
    body:JSON.stringify({initData:tg.initData})
   });
-
   const result=await response.json();
-
-  if(!response.ok||!result.success||!result.profile){
-   throw new Error(result.error||"Не удалось выполнить вход.");
-  }
-
+  if(!response.ok||!result.success||!result.profile)throw new Error(result.error||"Не удалось выполнить вход.");
   telegramProfile=result.profile;
   displayProfile(telegramProfile);
-
  }catch(error){
   console.error(error);
   status.textContent=error.message||"Ошибка входа. Открой магазин заново через Telegram.";
- }finally{
-  authLoading=false;
- }
+ }finally{authLoading=false}
 }
 
 async function loadProducts(){
  const box=document.getElementById("products");
- box.innerHTML='<div class="status">Подключаем каталог...</div>';
-
+ box.innerHTML='<div class="status">Подключаем коллекцию...</div>';
  try{
   const response=await fetch(
    SUPABASE_URL+"/rest/v1/products?select=id,name,description,price,old_price,category,image_url,is_active,gift_bag_included&is_active=eq.true&order=created_at.desc",
-   {
-    method:"GET",
-    headers:{
-     "apikey":SUPABASE_KEY,
-     "Authorization":"Bearer "+SUPABASE_KEY,
-     "Accept":"application/json"
-    }
-   }
+   {method:"GET",headers:{
+    "apikey":SUPABASE_KEY,
+    "Authorization":"Bearer "+SUPABASE_KEY,
+    "Accept":"application/json"
+   }}
   );
-
   const data=await response.json();
-
-  if(!response.ok){
-   throw new Error(data.message||JSON.stringify(data));
-  }
-
-  if(!Array.isArray(data)){
-   throw new Error("База вернула неправильный ответ");
-  }
-
+  if(!response.ok)throw new Error(data.message||JSON.stringify(data));
+  if(!Array.isArray(data))throw new Error("База вернула неправильный ответ");
   products=data;
   buildCategories();
   render();
-
  }catch(e){
   console.error("RAVO ERROR:",e);
   box.innerHTML='<div class="status">Ошибка: '+esc(e.message)+'</div>';
  }
+}
+
+function categoryLabel(cat){
+ const labels={
+  "Все":"ALL",
+  "Парфюмерия":"FRAGRANCE",
+  "Косметика":"BEAUTY",
+  "Аксессуары":"ACCESSORIES"
+ };
+ return labels[cat]||cat.toUpperCase();
 }
 
 function buildCategories(){
@@ -344,7 +701,7 @@ function buildCategories(){
  box.innerHTML="";
  cats.forEach(cat=>{
   const b=document.createElement("button");
-  b.textContent=cat;
+  b.textContent=categoryLabel(cat);
   b.className=cat===selected?"active":"";
   b.onclick=()=>filter(cat);
   box.appendChild(b);
@@ -362,7 +719,7 @@ function safeImage(url){
   const u=new URL(url);
   if(u.protocol==="https:"||u.protocol==="http:")return u.href;
  }catch(e){}
- return "https://placehold.co/600x600/191713/d4af37?text=RAVO+PRIVE";
+ return "https://placehold.co/600x700/E5D9D0/704D55?text=RAVO+PRIVE";
 }
 
 function esc(s){
@@ -380,22 +737,20 @@ function render(){
   ((p.name||"")+" "+(p.description||"")+" "+(p.category||"")).toLowerCase().includes(q)
  );
  const box=document.getElementById("products");
-
  if(!list.length){
-  box.innerHTML='<div class="empty">Ничего не найдено</div>';
+  box.innerHTML='<div class="empty">Коллекция скоро пополнится.</div>';
   return;
  }
-
  box.innerHTML=list.map(p=>`
   <article class="product" onclick="openProduct('${esc(p.id)}')">
-   <img src="${safeImage(p.image_url)}" alt="${esc(p.name)}"
-    onerror="this.src='https://placehold.co/600x600/191713/d4af37?text=RAVO+PRIVE'">
+   <div class="product-image-wrap">
+    <img src="${safeImage(p.image_url)}" alt="${esc(p.name)}"
+     onerror="this.src='https://placehold.co/600x700/E5D9D0/704D55?text=RAVO+PRIVE'">
+   </div>
    <div class="info">
-    <div class="brand">${esc(p.category||"RAVO PRIVÉ")}</div>
+    <div class="brand">${esc(categoryLabel(p.category||"RAVO PRIVÉ"))}</div>
     <div class="name">${esc(p.name)}</div>
-    <div class="price">${money(p.price)}
-     ${p.old_price?`<span class="old">${money(p.old_price)}</span>`:""}
-    </div>
+    <div class="price">${money(p.price)}${p.old_price?`<span class="old">${money(p.old_price)}</span>`:""}</div>
    </div>
   </article>`).join("");
 }
@@ -403,25 +758,20 @@ function render(){
 function openProduct(id){
  currentProduct=products.find(p=>String(p.id)===String(id));
  if(!currentProduct)return;
-
  const p=currentProduct;
-
  document.getElementById("detailContent").innerHTML=`
   <img class="detail-image" src="${safeImage(p.image_url)}"
-   onerror="this.src='https://placehold.co/600x600/191713/d4af37?text=RAVO+PRIVE'">
+   onerror="this.src='https://placehold.co/600x700/E5D9D0/704D55?text=RAVO+PRIVE'">
   <div class="detail-content">
-   <div class="detail-brand">${esc(p.category||"RAVO PRIVÉ")}</div>
+   <div class="detail-brand">${esc(categoryLabel(p.category||"RAVO PRIVÉ"))}</div>
    <h1 class="detail-title">${esc(p.name)}</h1>
-   <div class="detail-price">${money(p.price)}
-    ${p.old_price?`<span class="detail-old">${money(p.old_price)}</span>`:""}
-   </div>
-   <div class="detail-description">${esc(p.description||"Описание этого аромата скоро появится.")}</div>
-   <div class="detail-label">ИНФОРМАЦИЯ О ТОВАРЕ</div>
+   <div class="detail-price">${money(p.price)}${p.old_price?`<span class="detail-old">${money(p.old_price)}</span>`:""}</div>
+   <div class="detail-description">${esc(p.description||"Описание этого товара скоро появится.")}</div>
+   <div class="detail-label">PRODUCT DETAILS</div>
    <div class="detail-feature">Категория: ${esc(p.category||"Не указана")}</div>
    <div class="detail-feature">Подарочный пакет: ${p.gift_bag_included?'<span class="gift">Включён</span>':'Не включён'}</div>
    <button class="add" onclick="add('${esc(p.id)}')">ДОБАВИТЬ В КОРЗИНУ</button>
   </div>`;
-
  document.getElementById("catalogPage").classList.remove("active");
  document.getElementById("profilePage").classList.remove("active");
  document.getElementById("detailPage").classList.add("active");
@@ -433,10 +783,8 @@ function openProduct(id){
 function add(id){
  const p=products.find(x=>String(x.id)===String(id));
  if(!p)return;
-
  cart.push(p);
  document.getElementById("count").textContent=cart.length;
-
  const b=document.querySelector("#detailContent .add");
  if(b)b.textContent="ДОБАВЛЕНО ✓";
 }
@@ -449,10 +797,8 @@ function openCart(){
 function updateCart(){
  document.getElementById("cartItems").innerHTML=cart.length?
  cart.map((p,i)=>`<div class="cartItem">${esc(p.name)} — ${money(p.price)} <button onclick="removeItem(${i})">Удалить</button></div>`).join("")
- :"<p>Корзина пока пуста</p>";
-
- document.getElementById("total").textContent=
-  "Итого: "+money(cart.reduce((s,p)=>s+Number(p.price||0),0));
+ :"<p class='profile-muted'>Твоя корзина пока пуста.</p>";
+ document.getElementById("total").textContent="Итого: "+money(cart.reduce((s,p)=>s+Number(p.price||0),0));
 }
 
 function removeItem(i){
@@ -461,96 +807,56 @@ function removeItem(i){
  updateCart();
 }
 
-function closeCart(){
- document.getElementById("cartPanel").style.display="none";
-}
+function closeCart(){document.getElementById("cartPanel").style.display="none"}
 
 function openCheckout(){
- if(!cart.length){
-  alert("Сначала добавь товар в корзину.");
-  return;
- }
-
- document.getElementById("checkoutTotal").textContent=
-  "Итого: "+money(cart.reduce((s,p)=>s+Number(p.price||0),0));
-
+ if(!cart.length){alert("Сначала добавь товар в корзину.");return}
+ document.getElementById("checkoutTotal").textContent="Итого: "+money(cart.reduce((s,p)=>s+Number(p.price||0),0));
  document.getElementById("checkoutMessage").textContent="";
  document.getElementById("cartPanel").style.display="none";
  document.getElementById("checkoutPanel").style.display="block";
 }
 
-function closeCheckout(){
- document.getElementById("checkoutPanel").style.display="none";
-}
+function closeCheckout(){document.getElementById("checkoutPanel").style.display="none"}
 
 async function submitCheckout(event){
  event.preventDefault();
-
- if(!cart.length){
-  alert("Корзина пуста.");
-  closeCheckout();
-  return;
- }
-
+ if(!cart.length){alert("Корзина пуста.");closeCheckout();return}
  const button=document.getElementById("submitOrder");
  const message=document.getElementById("checkoutMessage");
  const name=document.getElementById("customerName").value.trim();
  const phone=document.getElementById("customerPhone").value.trim();
-
- if(!name||!phone){
-  message.textContent="Заполни имя и номер телефона.";
-  return;
- }
-
+ if(!name||!phone){message.textContent="Заполни имя и номер телефона.";return}
  const quantities={};
-
- cart.forEach(p=>{
-  const id=String(p.id);
-  quantities[id]=(quantities[id]||0)+1;
- });
-
- const items=Object.entries(quantities).map(([id,quantity])=>({
-  id,quantity
- }));
-
+ cart.forEach(p=>{const id=String(p.id);quantities[id]=(quantities[id]||0)+1});
+ const items=Object.entries(quantities).map(([id,quantity])=>({id,quantity}));
  button.disabled=true;
  button.textContent="ОТПРАВЛЯЕМ...";
  message.textContent="Отправляем заказ...";
-
  try{
+  const tg=window.Telegram&&window.Telegram.WebApp;
   const response=await fetch("/api/order",{
    method:"POST",
    headers:{"Content-Type":"application/json"},
    body:JSON.stringify({
-  name,
-  phone,
-  items,
-  initData: window.Telegram.WebApp.initData
-})
+    name,phone,items,
+    initData:tg?tg.initData:""
+   })
   });
-
   let result={};
   try{result=await response.json()}catch(e){}
-
-  if(!response.ok||!result.success){
-   throw new Error(result.error||"Не удалось отправить заказ. Попробуй ещё раз.");
-  }
-
+  if(!response.ok||!result.success)throw new Error(result.error||"Не удалось отправить заказ. Попробуй ещё раз.");
   cart=[];
   document.getElementById("count").textContent="0";
   updateCart();
   document.getElementById("checkoutForm").reset();
-
   message.textContent="Заказ успешно отправлен! Скоро мы свяжемся с тобой.";
   button.textContent="ЗАКАЗ ОТПРАВЛЕН ✓";
-  button.disabled=true;
-
   setTimeout(()=>{
    closeCheckout();
    button.disabled=false;
    button.textContent="ОТПРАВИТЬ ЗАКАЗ";
   },2200);
-
  }catch(error){
   console.error(error);
   message.textContent=error.message||"Ошибка отправки. Попробуй ещё раз.";
@@ -558,9 +864,9 @@ async function submitCheckout(event){
   button.textContent="ПОПРОБОВАТЬ СНОВА";
  }
 }
+
 loadProducts();
 authenticateTelegram();
 </script>
-
 </body>
 </html>
