@@ -706,7 +706,118 @@ function displayProfile(profile){
  document.getElementById("subscriptionStatus").textContent=active?"Активна":(expired?"Истекла":"Не активна");
  document.getElementById("subscriptionExpires").textContent=formatDate(expiry);
 }
+function getOrderStatus(status){
+ const statuses={
+  pending:"Ожидает подтверждения",
+  processing:"Собирается",
+  cancelled:"Отменён",
+  delivered:"Доставлен"
+ };
+ return statuses[String(status||"pending").toLowerCase()]||"В обработке";
+}
 
+async function loadOrderHistory(){
+ const box=document.getElementById("ordersHistory");
+ const tg=window.Telegram&&window.Telegram.WebApp;
+
+ if(!tg||!tg.initData){
+  box.innerHTML='<div class="profile-muted">Открой магазин через Telegram, чтобы увидеть свои заказы.</div>';
+  return;
+ }
+
+ box.innerHTML='<div class="profile-muted">Загружаем историю заказов...</div>';
+
+ try{
+  const response=await fetch("/api/my-orders",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({initData:tg.initData})
+  });
+
+  const result=await response.json();
+
+  if(!response.ok||!result.success){
+   throw new Error(result.error||"Не удалось загрузить заказы.");
+  }
+
+  const orders=Array.isArray(result.orders)?result.orders:[];
+
+  document.getElementById("profileOrders").textContent=
+   orders.length.toLocaleString("ru-RU");
+
+  const spent=orders.reduce((sum,order)=>{
+   if(String(order.status).toLowerCase()==="cancelled")return sum;
+   return sum+Number(order.total_amount||0);
+  },0);
+
+  document.getElementById("profileSpent").textContent=money(spent);
+
+  if(!orders.length){
+   box.innerHTML='<div class="profile-muted">У тебя пока нет заказов. Самое время выбрать что-нибудь особенное в нашей коллекции.</div>';
+   return;
+  }
+
+  box.innerHTML=orders.map(order=>{
+   const status=String(order.status||"pending").toLowerCase();
+   const statusClass=status==="delivered"?"delivered":status==="cancelled"?"cancelled":"";
+   const orderNumber=String(order.id||"").slice(-8).toUpperCase();
+   const date=order.created_at
+    ?new Date(order.created_at).toLocaleString("ru-RU",{
+      day:"numeric",
+      month:"long",
+      year:"numeric",
+      hour:"2-digit",
+      minute:"2-digit"
+     })
+    :"Дата не указана";
+
+   let items=order.items||[];
+   if(typeof items==="string"){
+    try{items=JSON.parse(items)}catch(e){items=[]}
+   }
+
+   const productsHtml=Array.isArray(items)&&items.length
+    ?items.map(item=>`
+      <div class="order-product">
+       <div class="order-product-name">
+        ${esc(item.name||"Товар")}
+        <span style="color:var(--muted)"> × ${Number(item.quantity||1)}</span>
+       </div>
+       <div class="order-product-price">${money(item.total??(Number(item.price||0)*Number(item.quantity||1)))}</div>
+      </div>
+     `).join("")
+    :'<div class="profile-muted">Информация о товарах отсутствует.</div>';
+
+   return `
+    <div class="order-card">
+     <div class="order-top">
+      <div>
+       <div class="order-number">Заказ №${esc(orderNumber)}</div>
+       <div class="order-date">${esc(date)}</div>
+      </div>
+      <div class="order-status ${statusClass}">
+       ${esc(getOrderStatus(status))}
+      </div>
+     </div>
+     <div class="order-products">${productsHtml}</div>
+     <div class="order-bottom">
+      <span style="color:var(--muted)">Итого</span>
+      <span class="order-total">${money(order.total_amount)}</span>
+     </div>
+    </div>
+   `;
+  }).join("");
+
+ }catch(error){
+  console.error("RAVO ORDER HISTORY:",error);
+  box.innerHTML=`
+   <div class="profile-muted">
+    Не удалось загрузить заказы. ${esc(error.message)}
+   </div>
+   <button class="add" onclick="loadOrderHistory()">ПОПРОБОВАТЬ СНОВА</button>
+  `;
+ }
+}
 async function authenticateTelegram(){
  if(authLoading)return;
  authLoading=true;
