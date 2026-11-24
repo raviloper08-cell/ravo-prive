@@ -433,7 +433,7 @@ nav button.active{color:var(--burgundy)}
  font:400 32px 'Cormorant Garamond',serif;
  color:var(--burgundy);
 }
- .orders-history{
+.orders-history{
  display:flex;
  flex-direction:column;
  gap:13px;
@@ -514,7 +514,7 @@ nav button.active{color:var(--burgundy)}
  .hero{margin:22px}
  .hero-image{height:290px}
 }
- .order-card{
+.order-card{
  background:var(--white);
  border:1px solid var(--line);
  padding:16px;
@@ -595,7 +595,6 @@ nav button.active{color:var(--burgundy)}
  to{transform:translateX(0)}
 }
 body{overscroll-behavior-x:pan-y}
-
 </style>
 </head>
 <body>
@@ -677,13 +676,13 @@ body{overscroll-behavior-x:pan-y}
    <div class="profile-line"><span>Статус</span><span id="subscriptionStatus" class="profile-status">Не активна</span></div>
    <div class="profile-line"><span>Действует до</span><span id="subscriptionExpires">—</span></div>
   </div>
-<div class="profile-box">
- <h3 class="profile-heading">Мои заказы</h3>
- <div id="ordersHistory" class="orders-history">
-  <div class="profile-muted">Загружаем историю заказов...</div>
- </div>
-</div>
 
+  <div class="profile-box">
+   <h3 class="profile-heading">Мои заказы</h3>
+   <div id="ordersHistory" class="orders-history">
+    <div class="profile-muted">Загружаем историю заказов...</div>
+   </div>
+  </div>
  </div>
 </main>
 
@@ -726,7 +725,8 @@ let selected="Все";
 let cart=[];
 let currentProduct=null;
 let authLoading=false;
-let catalogScrollY = 0;
+let catalogScrollY=0;
+
 function showCatalog(){
  document.getElementById("detailPage").classList.remove("active");
  document.getElementById("profilePage").classList.remove("active");
@@ -738,13 +738,6 @@ function showCatalog(){
   window.scrollTo(0,catalogScrollY);
  });
 }
- document.getElementById("detailPage").classList.remove("active");
- document.getElementById("profilePage").classList.remove("active");
- document.getElementById("catalogPage").classList.add("active");
- document.getElementById("homeTab").classList.add("active");
- document.getElementById("accountTab").classList.remove("active");
- window.scrollTo(0,0);
-}
 
 function showProfile(){
  document.getElementById("catalogPage").classList.remove("active");
@@ -753,8 +746,9 @@ function showProfile(){
  document.getElementById("homeTab").classList.remove("active");
  document.getElementById("accountTab").classList.add("active");
  window.scrollTo(0,0);
-if(!telegramProfile&&!authLoading) authenticateTelegram();
-else if(telegramProfile) loadOrderHistory();
+
+ if(!telegramProfile&&!authLoading) authenticateTelegram();
+ else if(telegramProfile) loadOrderHistory();
 }
 
 function formatDate(value){
@@ -798,6 +792,7 @@ function displayProfile(profile){
  document.getElementById("subscriptionStatus").textContent=active?"Активна":(expired?"Истекла":"Не активна");
  document.getElementById("subscriptionExpires").textContent=formatDate(expiry);
 }
+
 function getOrderStatus(status){
  const statuses={
   pending:"Ожидает подтверждения",
@@ -847,7 +842,7 @@ async function loadOrderHistory(){
   if(!orders.length){
    box.innerHTML='<div class="profile-muted">У тебя пока нет заказов. Самое время выбрать что-нибудь особенное в нашей коллекции.</div>';
    return;
-     }
+  }
 
   box.innerHTML=orders.map(order=>{
    const status=String(order.status||"pending").toLowerCase();
@@ -910,6 +905,7 @@ async function loadOrderHistory(){
   `;
  }
 }
+
 async function authenticateTelegram(){
  if(authLoading)return;
  authLoading=true;
@@ -933,13 +929,15 @@ async function authenticateTelegram(){
   });
   const result=await response.json();
   if(!response.ok||!result.success||!result.profile)throw new Error(result.error||"Не удалось выполнить вход.");
-telegramProfile=result.profile;
-displayProfile(telegramProfile);
-loadOrderHistory();
+  telegramProfile=result.profile;
+  displayProfile(telegramProfile);
+  loadOrderHistory();
  }catch(error){
   console.error(error);
   status.textContent=error.message||"Ошибка входа. Открой магазин заново через Telegram.";
- }finally{authLoading=false}
+ }finally{
+  authLoading=false;
+ }
 }
 
 async function loadProducts(){
@@ -1037,9 +1035,11 @@ function render(){
 }
 
 function openProduct(id){
-  catalogScrollY = window.scrollY;
+ catalogScrollY=window.scrollY;
+
  currentProduct=products.find(p=>String(p.id)===String(id));
  if(!currentProduct)return;
+
  const p=currentProduct;
  document.getElementById("detailContent").innerHTML=`
   <img class="detail-image" src="${safeImage(p.image_url)}"
@@ -1054,11 +1054,13 @@ function openProduct(id){
    <div class="detail-feature">Подарочный пакет: ${p.gift_bag_included?'<span class="gift">Включён</span>':'Не включён'}</div>
    <button class="add" onclick="add('${esc(p.id)}')">ДОБАВИТЬ В КОРЗИНУ</button>
   </div>`;
+
  document.getElementById("catalogPage").classList.remove("active");
  document.getElementById("profilePage").classList.remove("active");
  document.getElementById("detailPage").classList.add("active");
  document.getElementById("homeTab").classList.remove("active");
  document.getElementById("accountTab").classList.remove("active");
+
  window.scrollTo(0,0);
 }
 
@@ -1089,10 +1091,15 @@ function removeItem(i){
  updateCart();
 }
 
-function closeCart(){document.getElementById("cartPanel").style.display="none"}
+function closeCart(){
+ document.getElementById("cartPanel").style.display="none";
+}
 
 function openCheckout(){
- if(!cart.length){alert("Сначала добавь товар в корзину.");return}
+ if(!cart.length){
+  alert("Сначала добавь товар в корзину.");
+  return;
+ }
  document.getElementById("checkoutTotal").textContent="Итого: "+money(cart.reduce((s,p)=>s+Number(p.price||0),0));
  document.getElementById("checkoutMessage").textContent="";
  document.getElementById("cartPanel").style.display="none";
@@ -1111,42 +1118,68 @@ function closeCheckout(returnToCart=true){
 
 async function submitCheckout(event){
  event.preventDefault();
- if(!cart.length){alert("Корзина пуста.");closeCheckout();return}
+
+ if(!cart.length){
+  alert("Корзина пуста.");
+  closeCheckout();
+  return;
+ }
+
  const button=document.getElementById("submitOrder");
  const message=document.getElementById("checkoutMessage");
  const name=document.getElementById("customerName").value.trim();
  const phone=document.getElementById("customerPhone").value.trim();
- if(!name||!phone){message.textContent="Заполни имя и номер телефона.";return}
+
+ if(!name||!phone){
+  message.textContent="Заполни имя и номер телефона.";
+  return;
+ }
+
  const quantities={};
- cart.forEach(p=>{const id=String(p.id);quantities[id]=(quantities[id]||0)+1});
+ cart.forEach(p=>{
+  const id=String(p.id);
+  quantities[id]=(quantities[id]||0)+1;
+ });
+
  const items=Object.entries(quantities).map(([id,quantity])=>({id,quantity}));
+
  button.disabled=true;
  button.textContent="ОТПРАВЛЯЕМ...";
  message.textContent="Отправляем заказ...";
+
  try{
   const tg=window.Telegram&&window.Telegram.WebApp;
   const response=await fetch("/api/order",{
    method:"POST",
    headers:{"Content-Type":"application/json"},
    body:JSON.stringify({
-    name,phone,items,
+    name,
+    phone,
+    items,
     initData:tg?tg.initData:""
    })
   });
+
   let result={};
   try{result=await response.json()}catch(e){}
-  if(!response.ok||!result.success)throw new Error(result.error||"Не удалось отправить заказ. Попробуй ещё раз.");
+
+  if(!response.ok||!result.success){
+   throw new Error(result.error||"Не удалось отправить заказ. Попробуй ещё раз.");
+  }
+
   cart=[];
   document.getElementById("count").textContent="0";
   updateCart();
   document.getElementById("checkoutForm").reset();
   message.textContent="Заказ успешно отправлен! Скоро мы свяжемся с тобой.";
   button.textContent="ЗАКАЗ ОТПРАВЛЕН ✓";
+
   setTimeout(()=>{
    closeCheckout(false);
    button.disabled=false;
    button.textContent="ОТПРАВИТЬ ЗАКАЗ";
   },2200);
+
  }catch(error){
   console.error(error);
   message.textContent=error.message||"Ошибка отправки. Попробуй ещё раз.";
@@ -1154,7 +1187,6 @@ async function submitCheckout(event){
   button.textContent="ПОПРОБОВАТЬ СНОВА";
  }
 }
-
 
 // iPhone-like edge swipe: swipe right from the left edge to go back.
 (function initRavoSwipeNavigation(){
@@ -1165,6 +1197,7 @@ async function submitCheckout(event){
 
  document.addEventListener("touchstart",event=>{
   if(!event.touches||event.touches.length!==1)return;
+
   const target=event.target;
   if(target&&target.closest&&target.closest("input,textarea,select,.categories"))return;
 
@@ -1177,6 +1210,7 @@ async function submitCheckout(event){
 
  document.addEventListener("touchmove",event=>{
   if(!tracking||!event.touches||event.touches.length!==1)return;
+
   const touch=event.touches[0];
   const dx=touch.clientX-startX;
   const dy=touch.clientY-startY;
@@ -1185,7 +1219,9 @@ async function submitCheckout(event){
    tracking=false;
    return;
   }
+
   if(dx>12)moved=true;
+
   if(dx>8&&Math.abs(dx)>Math.abs(dy)*1.2){
    event.preventDefault();
   }
@@ -1198,6 +1234,7 @@ async function submitCheckout(event){
 
   const touch=event.changedTouches&&event.changedTouches[0];
   if(!touch)return;
+
   const dx=touch.clientX-startX;
   const dy=touch.clientY-startY;
 
@@ -1212,14 +1249,17 @@ async function submitCheckout(event){
    closeCheckout(true);
    return;
   }
+
   if(cartPanel&&cartPanel.style.display==="block"){
    closeCart();
    return;
   }
+
   if(detail&&detail.classList.contains("active")){
    showCatalog();
    return;
   }
+
   if(profile&&profile.classList.contains("active")){
    showCatalog();
   }
