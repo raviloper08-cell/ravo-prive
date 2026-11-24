@@ -842,8 +842,9 @@ async function authenticateTelegram(){
   });
   const result=await response.json();
   if(!response.ok||!result.success||!result.profile)throw new Error(result.error||"Не удалось выполнить вход.");
-  telegramProfile=result.profile;
-  displayProfile(telegramProfile);
+telegramProfile=result.profile;
+displayProfile(telegramProfile);
+loadOrderHistory();
  }catch(error){
   console.error(error);
   status.textContent=error.message||"Ошибка входа. Открой магазин заново через Telegram.";
