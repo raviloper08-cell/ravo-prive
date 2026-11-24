@@ -1037,6 +1037,7 @@ function render(){
 }
 
 function openProduct(id){
+  catalogScrollY = window.scrollY;
  currentProduct=products.find(p=>String(p.id)===String(id));
  if(!currentProduct)return;
  const p=currentProduct;
