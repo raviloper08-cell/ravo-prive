@@ -66,7 +66,9 @@ function verifyTelegram(initData, token) {
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({
+      error: "Method not allowed"
+    });
   }
 
   try {
@@ -130,6 +132,8 @@ export default async function handler(req, res) {
     );
 
     if (!productResponse.ok) {
+      const errorText = await productResponse.text();
+      console.error("Product lookup error:", errorText);
       throw new Error("Ошибка проверки товаров");
     }
 
@@ -167,9 +171,15 @@ export default async function handler(req, res) {
       };
     });
 
-    // Получаем профиль покупателя и ранее сохранённые контакты.
+    // Ищем профиль по Telegram ID.
+    // В таблице profiles имя хранится в поле name.
+    const profileQuery = new URLSearchParams({
+      select: "id,auth_user_id,bonus_balance,subscription_plan,name,phone",
+      telegram_id: `eq.${telegramId}`
+    });
+
     const profileResponse = await fetch(
-      `${supabaseUrl}/rest/v1/profiles?telegram_id=eq.${encodeURIComponent(telegramId)}&select=id,auth_user_id,bonus_balance,subscription_plan,customer_name,phone`,
+      `${supabaseUrl}/rest/v1/profiles?${profileQuery}`,
       {
         headers: {
           apikey: serviceKey,
@@ -179,6 +189,8 @@ export default async function handler(req, res) {
     );
 
     if (!profileResponse.ok) {
+      const errorText = await profileResponse.text();
+      console.error("Profile lookup error:", errorText);
       throw new Error("Не удалось найти профиль покупателя");
     }
 
@@ -198,12 +210,11 @@ export default async function handler(req, res) {
       });
     }
 
-    // Если контакты уже сохранены, используем их.
-    // Если покупатель ввёл новые — обновляем сохранённые.
+    // Используем имя и телефон из формы или сохранённого профиля.
     const customerName =
       typeof name === "string" && name.trim()
         ? name.trim()
-        : String(profile.customer_name || "").trim();
+        : String(profile.name || "").trim();
 
     const customerPhone =
       typeof phone === "string" && phone.trim()
@@ -221,7 +232,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // Сохраняем контакты в профиле покупателя.
+    // Сохраняем контакты в существующие поля name и phone.
     const profileUpdateResponse = await fetch(
       `${supabaseUrl}/rest/v1/profiles?telegram_id=eq.${encodeURIComponent(telegramId)}`,
       {
@@ -233,7 +244,7 @@ export default async function handler(req, res) {
           Prefer: "return=minimal"
         },
         body: JSON.stringify({
-          customer_name: customerName,
+          name: customerName,
           phone: customerPhone,
           updated_at: new Date().toISOString()
         })
@@ -246,7 +257,8 @@ export default async function handler(req, res) {
       throw new Error("Не удалось сохранить контакты покупателя");
     }
 
-    // Создаём заказ с отдельной копией контактных данных.
+    // Создаём заказ.
+    // В таблице orders поле customer_name существует.
     const orderPayload = {
       user_id: profile.auth_user_id,
       telegram_id: telegramId,
@@ -274,7 +286,7 @@ export default async function handler(req, res) {
 
     const savedOrders = await saveResponse.json();
 
-    if (!saveResponse.ok || !savedOrders.length) {
+    if (!saveResponse.ok || !Array.isArray(savedOrders) || !savedOrders.length) {
       console.error("Supabase order save error:", savedOrders);
       throw new Error("Не удалось сохранить заказ");
     }
