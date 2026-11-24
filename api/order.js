@@ -25,9 +25,13 @@ function verifyTelegram(initData, token) {
     return null;
   }
 
-  if (!Number.isFinite(authDate) ||
-      Math.floor(Date.now() / 1000) - authDate > 86400 ||
-      authDate > Math.floor(Date.now() / 1000) + 60) {
+  const now = Math.floor(Date.now() / 1000);
+
+  if (
+    !Number.isFinite(authDate) ||
+    now - authDate > 86400 ||
+    authDate > now + 60
+  ) {
     return null;
   }
 
@@ -77,12 +81,10 @@ export default async function handler(req, res) {
       throw new Error("Не настроены переменные сервера");
     }
 
-    if (
-      typeof name !== "string" || name.trim().length < 2 || name.length > 80 ||
-      typeof phone !== "string" || phone.trim().length < 5 || phone.length > 30 ||
-      !Array.isArray(items) || items.length === 0 || items.length > 30
-    ) {
-      return res.status(400).json({ error: "Проверьте данные заказа" });
+    if (!Array.isArray(items) || items.length === 0 || items.length > 30) {
+      return res.status(400).json({
+        error: "Проверьте товары в заказе"
+      });
     }
 
     const telegramUser = verifyTelegram(initData, token);
@@ -97,11 +99,16 @@ export default async function handler(req, res) {
 
     const cleanItems = items.map(item => ({
       id: String(item.id || ""),
-      quantity: Math.max(1, Math.min(20, Math.floor(Number(item.quantity) || 1)))
+      quantity: Math.max(
+        1,
+        Math.min(20, Math.floor(Number(item.quantity) || 1))
+      )
     }));
 
     if (cleanItems.some(item => !item.id)) {
-      return res.status(400).json({ error: "Некорректный товар" });
+      return res.status(400).json({
+        error: "Некорректный товар"
+      });
     }
 
     const ids = [...new Set(cleanItems.map(item => item.id))];
@@ -134,7 +141,10 @@ export default async function handler(req, res) {
       });
     }
 
-    const productMap = new Map(products.map(p => [String(p.id), p]));
+    const productMap = new Map(
+      products.map(product => [String(product.id), product])
+    );
+
     let total = 0;
 
     const orderItems = cleanItems.map(item => {
@@ -157,8 +167,9 @@ export default async function handler(req, res) {
       };
     });
 
+    // Получаем профиль покупателя и ранее сохранённые контакты.
     const profileResponse = await fetch(
-      `${supabaseUrl}/rest/v1/profiles?telegram_id=eq.${encodeURIComponent(telegramId)}&select=id,auth_user_id,bonus_balance,subscription_plan`,
+      `${supabaseUrl}/rest/v1/profiles?telegram_id=eq.${encodeURIComponent(telegramId)}&select=id,auth_user_id,bonus_balance,subscription_plan,customer_name,phone`,
       {
         headers: {
           apikey: serviceKey,
@@ -180,20 +191,71 @@ export default async function handler(req, res) {
     }
 
     const profile = profiles[0];
-if (!profile.auth_user_id) {
-  return res.status(409).json({
-    error: "Профиль не связан с авторизацией. Перезапустите приложение."
-  });
-}
-const orderPayload = {
-  user_id: profile.auth_user_id,
+
+    if (!profile.auth_user_id) {
+      return res.status(409).json({
+        error: "Профиль не связан с авторизацией. Перезапустите приложение."
+      });
+    }
+
+    // Если контакты уже сохранены, используем их.
+    // Если покупатель ввёл новые — обновляем сохранённые.
+    const customerName =
+      typeof name === "string" && name.trim()
+        ? name.trim()
+        : String(profile.customer_name || "").trim();
+
+    const customerPhone =
+      typeof phone === "string" && phone.trim()
+        ? phone.trim()
+        : String(profile.phone || "").trim();
+
+    if (
+      customerName.length < 2 ||
+      customerName.length > 80 ||
+      customerPhone.length < 5 ||
+      customerPhone.length > 30
+    ) {
+      return res.status(400).json({
+        error: "Укажите корректное имя и номер телефона"
+      });
+    }
+
+    // Сохраняем контакты в профиле покупателя.
+    const profileUpdateResponse = await fetch(
+      `${supabaseUrl}/rest/v1/profiles?telegram_id=eq.${encodeURIComponent(telegramId)}`,
+      {
+        method: "PATCH",
+        headers: {
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal"
+        },
+        body: JSON.stringify({
+          customer_name: customerName,
+          phone: customerPhone,
+          updated_at: new Date().toISOString()
+        })
+      }
+    );
+
+    if (!profileUpdateResponse.ok) {
+      const errorText = await profileUpdateResponse.text();
+      console.error("Profile update error:", errorText);
+      throw new Error("Не удалось сохранить контакты покупателя");
+    }
+
+    // Создаём заказ с отдельной копией контактных данных.
+    const orderPayload = {
+      user_id: profile.auth_user_id,
       telegram_id: telegramId,
-      customer_name: name.trim(),
-      phone: phone.trim(),
+      customer_name: customerName,
+      phone: customerPhone,
       items: orderItems,
       total_amount: total,
-     status: "pending",
-payment_status: "pending"
+      status: "pending",
+      payment_status: "pending"
     };
 
     const saveResponse = await fetch(
@@ -226,8 +288,8 @@ payment_status: "pending"
     const message = [
       `🛍 <b>НОВЫЙ ЗАКАЗ RAVO PRIVÉ №${order.id}</b>`,
       "",
-      `👤 Имя: ${escapeHtml(name.trim())}`,
-      `📞 Телефон: ${escapeHtml(phone.trim())}`,
+      `👤 Имя: ${escapeHtml(customerName)}`,
+      `📞 Телефон: ${escapeHtml(customerPhone)}`,
       `🆔 Telegram ID: ${telegramId}`,
       "",
       "<b>Товары:</b>",
@@ -242,7 +304,9 @@ payment_status: "pending"
       `https://api.telegram.org/bot${token}/sendMessage`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({
           chat_id: chatId,
           text: message,
@@ -250,11 +314,20 @@ payment_status: "pending"
           reply_markup: {
             inline_keyboard: [
               [
-                { text: "✅ Подтвердить", callback_data: `order_confirm:${order.id}` },
-                { text: "❌ Отменить", callback_data: `order_cancel:${order.id}` }
+                {
+                  text: "✅ Подтвердить",
+                  callback_data: `order_confirm:${order.id}`
+                },
+                {
+                  text: "❌ Отменить",
+                  callback_data: `order_cancel:${order.id}`
+                }
               ],
               [
-                { text: "📦 Выполнен", callback_data: `order_done:${order.id}` }
+                {
+                  text: "📦 Выполнен",
+                  callback_data: `order_done:${order.id}`
+                }
               ]
             ]
           }
