@@ -15,8 +15,6 @@ function parseCallbackData(data) {
 
     if (match) {
       const actionName = match[1].toLowerCase();
-      const orderId = match[2];
-
       const actionMap = {
         order_confirm: "order_confirm",
         order_cancel: "order_cancel",
@@ -31,7 +29,7 @@ function parseCallbackData(data) {
 
       return {
         action: actionMap[actionName],
-        orderId
+        orderId: match[2]
       };
     }
   }
@@ -87,12 +85,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log("RAVO CALLBACK:", JSON.stringify({
-      data: callback.data,
-      messageId: callback.message?.message_id,
-      chatId: callback.message?.chat?.id
-    }));
-
     const message = callback.message;
     const chatId = message?.chat?.id;
 
@@ -109,7 +101,6 @@ export default async function handler(req, res) {
     const parsed = parseCallbackData(callback.data);
 
     if (!parsed) {
-      console.error("Invalid callback data:", callback.data);
       await answerCallback(token, callback.id, "Не удалось распознать кнопку");
       return res.status(200).json({ ok: true });
     }
@@ -139,49 +130,108 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
-    const updateResponse = await fetch(
-      `${supabaseUrl}/rest/v1/orders?id=eq.${encodeURIComponent(parsed.orderId)}&select=id,status`,
-      {
-        method: "PATCH",
-        headers: {
-          apikey: serviceKey,
-          Authorization: `Bearer ${serviceKey}`,
-          "Content-Type": "application/json",
-          Prefer: "return=representation"
-        },
-        body: JSON.stringify({
-          status: selected.value,
-          updated_at: new Date().toISOString()
-        })
+    let bonus = 0;
+    let alreadyCompleted = false;
+
+    if (parsed.action === "order_done") {
+      const bonusResponse = await fetch(
+        `${supabaseUrl}/rest/v1/rpc/complete_ravo_order`,
+        {
+          method: "POST",
+          headers: {
+            apikey: serviceKey,
+            Authorization: `Bearer ${serviceKey}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            p_order_id: parsed.orderId
+          })
+        }
+      );
+
+      const bonusText = await bonusResponse.text();
+
+      let bonusResult;
+
+      try {
+        bonusResult = bonusText ? JSON.parse(bonusText) : {};
+      } catch {
+        bonusResult = {};
       }
-    );
 
-    const updateText = await updateResponse.text();
-    let updatedOrders = [];
+      if (!bonusResponse.ok) {
+        console.error("Bonus procedure error:", {
+          status: bonusResponse.status,
+          response: bonusText,
+          orderId: parsed.orderId
+        });
 
-    try {
-      updatedOrders = updateText ? JSON.parse(updateText) : [];
-    } catch {
-      console.error("Supabase returned invalid JSON:", updateText);
-    }
+        await answerCallback(
+          token,
+          callback.id,
+          "Не удалось завершить заказ и начислить бонусы"
+        );
 
-    if (!updateResponse.ok || !updatedOrders.length) {
-      console.error("Order update failed:", {
-        status: updateResponse.status,
-        response: updateText,
-        orderId: parsed.orderId
-      });
+        return res.status(200).json({ ok: true });
+      }
 
-      await answerCallback(token, callback.id, "Не удалось обновить заказ");
-      return res.status(200).json({ ok: true });
+      bonus = Number(bonusResult.bonus || 0);
+      alreadyCompleted = Boolean(bonusResult.already_completed);
+
+    } else {
+      const updateResponse = await fetch(
+        `${supabaseUrl}/rest/v1/orders?id=eq.${encodeURIComponent(parsed.orderId)}&select=id,status`,
+        {
+          method: "PATCH",
+          headers: {
+            apikey: serviceKey,
+            Authorization: `Bearer ${serviceKey}`,
+            "Content-Type": "application/json",
+            Prefer: "return=representation"
+          },
+          body: JSON.stringify({
+            status: selected.value,
+            updated_at: new Date().toISOString()
+          })
+        }
+      );
+
+      const updateText = await updateResponse.text();
+
+      let updatedOrders = [];
+
+      try {
+        updatedOrders = updateText ? JSON.parse(updateText) : [];
+      } catch {
+        console.error("Invalid Supabase JSON:", updateText);
+      }
+
+      if (!updateResponse.ok || !updatedOrders.length) {
+        console.error("Order update failed:", {
+          status: updateResponse.status,
+          response: updateText,
+          orderId: parsed.orderId
+        });
+
+        await answerCallback(token, callback.id, "Не удалось обновить заказ");
+        return res.status(200).json({ ok: true });
+      }
     }
 
     const originalText = message.text || message.caption || "";
 
     const cleanText = originalText.replace(
-      /\n\n(?:✅ <b>ЗАКАЗ ПОДТВЕРЖДЁН<\/b>|❌ <b>ЗАКАЗ ОТМЕНЁН<\/b>|📦 <b>ЗАКАЗ ВЫПОЛНЕН<\/b>)$/,
+      /\n\n(?:✅ <b>ЗАКАЗ ПОДТВЕРЖДЁН<\/b>|❌ <b>ЗАКАЗ ОТМЕНЁН<\/b>|📦 <b>ЗАКАЗ ВЫПОЛНЕН<\/b>)(?:\n.*)?$/,
       ""
     );
+
+    let finalStatusText = selected.text;
+
+    if (parsed.action === "order_done") {
+      finalStatusText += alreadyCompleted
+        ? "\n\nℹ️ Заказ уже был завершён. Повторного начисления нет."
+        : `\n\n🎁 Начислено бонусов: <b>${bonus}</b>`;
+    }
 
     const editResponse = await fetch(
       `https://api.telegram.org/bot${token}/editMessageText`,
@@ -191,7 +241,7 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           chat_id: chatId,
           message_id: message.message_id,
-          text: cleanText + "\n\n" + selected.text,
+          text: cleanText + "\n\n" + finalStatusText,
           parse_mode: "HTML",
           reply_markup: {
             inline_keyboard: []
@@ -206,17 +256,27 @@ export default async function handler(req, res) {
       console.error("Telegram edit error:", editResult);
     }
 
+    let answerText = selected.answer;
+
+    if (parsed.action === "order_done") {
+      answerText = alreadyCompleted
+        ? "Заказ уже завершён, повторных бонусов нет"
+        : `Заказ выполнен. Начислено ${bonus} бонусов`;
+    }
+
     await answerCallback(
       token,
       callback.id,
       editResult.ok
-        ? selected.answer
+        ? answerText
         : "Статус сохранён, но сообщение не обновилось"
     );
 
     console.log("RAVO ORDER UPDATED:", {
       orderId: parsed.orderId,
       status: selected.value,
+      bonus,
+      alreadyCompleted,
       telegramUpdated: editResult.ok
     });
 
