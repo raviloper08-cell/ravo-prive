@@ -1,6 +1,60 @@
 
 import { createHash } from "node:crypto";
 
+function parseCallbackData(data) {
+  const value = String(data || "").trim();
+
+  const patterns = [
+    /^(order_confirm|order_cancel|order_done)[:_-]([A-Za-z0-9_-]+)$/i,
+    /^(confirm|cancel|done)[:_-]([A-Za-z0-9_-]+)$/i,
+    /^(confirm_order|cancel_order|done_order)[:_-]([A-Za-z0-9_-]+)$/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = pattern.exec(value);
+
+    if (match) {
+      const actionName = match[1].toLowerCase();
+      const orderId = match[2];
+
+      const actionMap = {
+        order_confirm: "order_confirm",
+        order_cancel: "order_cancel",
+        order_done: "order_done",
+        confirm: "order_confirm",
+        cancel: "order_cancel",
+        done: "order_done",
+        confirm_order: "order_confirm",
+        cancel_order: "order_cancel",
+        done_order: "order_done"
+      };
+
+      return {
+        action: actionMap[actionName],
+        orderId
+      };
+    }
+  }
+
+  return null;
+}
+
+async function answerCallback(token, callbackId, text) {
+  const response = await fetch(
+    `https://api.telegram.org/bot${token}/answerCallbackQuery`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        callback_query_id: callbackId,
+        text
+      })
+    }
+  );
+
+  return response.json();
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -19,36 +73,48 @@ export default async function handler(req, res) {
     .update(token)
     .digest("hex");
 
-  if (req.headers["x-telegram-bot-api-secret-token"] !== expectedSecret) {
+  const receivedSecret =
+    req.headers["x-telegram-bot-api-secret-token"];
+
+  if (receivedSecret !== expectedSecret) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  try {
-    const callback = req.body?.callback_query;
+  const callback = req.body?.callback_query;
 
-    if (!callback) {
-      return res.status(200).json({ ok: true });
-    }
+  if (!callback) {
+    return res.status(200).json({ ok: true });
+  }
+
+  try {
+    console.log("RAVO CALLBACK:", JSON.stringify({
+      data: callback.data,
+      messageId: callback.message?.message_id,
+      chatId: callback.message?.chat?.id
+    }));
 
     const message = callback.message;
+    const chatId = message?.chat?.id;
 
-    if (String(message?.chat?.id) !== String(adminChatId)) {
+    if (String(chatId) !== String(adminChatId)) {
       await answerCallback(token, callback.id, "Нет доступа");
       return res.status(200).json({ ok: true });
     }
 
-    const match = /^(order_confirm|order_cancel|order_done):(\d+)$/
-      .exec(callback.data || "");
-
-    if (!match || !message?.message_id) {
-      await answerCallback(token, callback.id, "Некорректная кнопка");
+    if (!message?.message_id) {
+      await answerCallback(token, callback.id, "Сообщение заказа не найдено");
       return res.status(200).json({ ok: true });
     }
 
-    const action = match[1];
-    const orderId = match[2];
+    const parsed = parseCallbackData(callback.data);
 
-    const statuses = {
+    if (!parsed) {
+      console.error("Invalid callback data:", callback.data);
+      await answerCallback(token, callback.id, "Не удалось распознать кнопку");
+      return res.status(200).json({ ok: true });
+    }
+
+    const statusMap = {
       order_confirm: {
         value: "processing",
         text: "✅ <b>ЗАКАЗ ПОДТВЕРЖДЁН</b>",
@@ -66,10 +132,15 @@ export default async function handler(req, res) {
       }
     };
 
-    const selected = statuses[action];
+    const selected = statusMap[parsed.action];
+
+    if (!selected) {
+      await answerCallback(token, callback.id, "Неизвестное действие");
+      return res.status(200).json({ ok: true });
+    }
 
     const updateResponse = await fetch(
-      `${supabaseUrl}/rest/v1/orders?id=eq.${encodeURIComponent(orderId)}&select=id,status`,
+      `${supabaseUrl}/rest/v1/orders?id=eq.${encodeURIComponent(parsed.orderId)}&select=id,status`,
       {
         method: "PATCH",
         headers: {
@@ -85,15 +156,28 @@ export default async function handler(req, res) {
       }
     );
 
-    const updatedOrders = await updateResponse.json();
+    const updateText = await updateResponse.text();
+    let updatedOrders = [];
+
+    try {
+      updatedOrders = updateText ? JSON.parse(updateText) : [];
+    } catch {
+      console.error("Supabase returned invalid JSON:", updateText);
+    }
 
     if (!updateResponse.ok || !updatedOrders.length) {
-      console.error("Order status update error:", updatedOrders);
+      console.error("Order update failed:", {
+        status: updateResponse.status,
+        response: updateText,
+        orderId: parsed.orderId
+      });
+
       await answerCallback(token, callback.id, "Не удалось обновить заказ");
       return res.status(200).json({ ok: true });
     }
 
-    const originalText = message.text || "";
+    const originalText = message.text || message.caption || "";
+
     const cleanText = originalText.replace(
       /\n\n(?:✅ <b>ЗАКАЗ ПОДТВЕРЖДЁН<\/b>|❌ <b>ЗАКАЗ ОТМЕНЁН<\/b>|📦 <b>ЗАКАЗ ВЫПОЛНЕН<\/b>)$/,
       ""
@@ -105,41 +189,52 @@ export default async function handler(req, res) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          chat_id: adminChatId,
+          chat_id: chatId,
           message_id: message.message_id,
           text: cleanText + "\n\n" + selected.text,
           parse_mode: "HTML",
-          reply_markup: { inline_keyboard: [] }
+          reply_markup: {
+            inline_keyboard: []
+          }
         })
       }
     );
 
     const editResult = await editResponse.json();
 
+    if (!editResult.ok) {
+      console.error("Telegram edit error:", editResult);
+    }
+
     await answerCallback(
       token,
       callback.id,
-      editResult.ok ? selected.answer : "Статус сохранён, но сообщение не обновилось"
+      editResult.ok
+        ? selected.answer
+        : "Статус сохранён, но сообщение не обновилось"
     );
+
+    console.log("RAVO ORDER UPDATED:", {
+      orderId: parsed.orderId,
+      status: selected.value,
+      telegramUpdated: editResult.ok
+    });
 
     return res.status(200).json({ ok: true });
 
   } catch (error) {
-    console.error("Webhook error:", error);
+    console.error("RAVO WEBHOOK ERROR:", error);
+
+    try {
+      await answerCallback(
+        token,
+        callback.id,
+        "Ошибка обработки. Попробуйте ещё раз."
+      );
+    } catch (callbackError) {
+      console.error("Callback answer error:", callbackError);
+    }
+
     return res.status(200).json({ ok: true });
   }
-}
-
-async function answerCallback(token, callbackId, text) {
-  await fetch(
-    `https://api.telegram.org/bot${token}/answerCallbackQuery`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        callback_query_id: callbackId,
-        text
-      })
-    }
-  );
 }
