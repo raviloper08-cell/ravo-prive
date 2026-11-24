@@ -662,7 +662,8 @@ function showProfile(){
  document.getElementById("homeTab").classList.remove("active");
  document.getElementById("accountTab").classList.add("active");
  window.scrollTo(0,0);
- if(!telegramProfile&&!authLoading) authenticateTelegram();
+if(!telegramProfile&&!authLoading) authenticateTelegram();
+else if(telegramProfile) loadOrderHistory();
 }
 
 function formatDate(value){
