@@ -224,6 +224,7 @@ let selected="Все";
 let cart=[];
 let currentProduct=null;
 let authLoading=false;
+let profileRefreshing=false;
 let catalogScrollY=0;
 
 function showCatalog(){
@@ -242,8 +243,9 @@ function showProfile(){
  document.getElementById("homeTab").classList.remove("active");
  document.getElementById("accountTab").classList.add("active");
  window.scrollTo(0,0);
+
  if(!telegramProfile&&!authLoading)authenticateTelegram();
- else if(telegramProfile)loadOrderHistory();
+ else if(telegramProfile)refreshProfile();
 }
 
 function formatDate(value){
@@ -258,7 +260,6 @@ function getPlanName(plan){
  return names[String(plan||"none").toLowerCase()]||String(plan);
 }
 
-// Подставляем ранее сохранённые контакты в форму оформления.
 function fillCheckoutContacts(){
  if(!telegramProfile)return;
  const nameInput=document.getElementById("customerName");
@@ -396,6 +397,40 @@ async function authenticateTelegram(){
  }
 }
 
+// Обновляем профиль с сервера, чтобы получать актуальный бонусный баланс.
+async function refreshProfile(){
+ if(profileRefreshing||authLoading)return;
+
+ const tg=window.Telegram&&window.Telegram.WebApp;
+ if(!tg||!tg.initData)return;
+
+ profileRefreshing=true;
+
+ try{
+  const response=await fetch("/api/auth",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({initData:tg.initData})
+  });
+
+  const result=await response.json();
+
+  if(!response.ok||!result.success||!result.profile){
+   throw new Error(result.error||"Не удалось обновить профиль");
+  }
+
+  telegramProfile=result.profile;
+  displayProfile(telegramProfile);
+  fillCheckoutContacts();
+  await loadOrderHistory();
+
+ }catch(error){
+  console.error("RAVO PROFILE REFRESH:",error);
+ }finally{
+  profileRefreshing=false;
+ }
+}
+
 async function loadProducts(){
  const box=document.getElementById("products");
  box.innerHTML='<div class="status">Подключаем коллекцию...</div>';
@@ -527,7 +562,6 @@ function openCheckout(){
  document.getElementById("cartPanel").style.display="none";
  document.getElementById("checkoutPanel").style.display="block";
  fillCheckoutContacts();
- // Если авторизация ещё загружается, после её завершения контакты также подставятся.
  if(!telegramProfile&&!authLoading)authenticateTelegram();
 }
 
@@ -570,8 +604,6 @@ async function submitCheckout(event){
   try{result=await response.json()}catch(e){}
   if(!response.ok||!result.success)throw new Error(result.error||"Не удалось отправить заказ. Попробуй ещё раз.");
 
-  // Обновляем данные в памяти приложения после успешного заказа.
-  // Сервер уже сохранил эти контакты в profiles.
   if(telegramProfile){
    telegramProfile.customer_name=name;
    telegramProfile.phone=phone;
@@ -599,7 +631,6 @@ async function submitCheckout(event){
  }
 }
 
-// Возврат свайпом вправо от левого края экрана.
 (function initRavoSwipeNavigation(){
  let startX=0,startY=0,tracking=false,moved=false;
  document.addEventListener("touchstart",event=>{
@@ -642,6 +673,13 @@ async function submitCheckout(event){
   if(profile&&profile.classList.contains("active"))showCatalog();
  },{passive:true});
 })();
+
+// Обновляем данные, когда пользователь возвращается в приложение.
+document.addEventListener("visibilitychange",()=>{
+ if(document.visibilityState==="visible"&&telegramProfile){
+  refreshProfile();
+ }
+});
 
 loadProducts();
 authenticateTelegram();
