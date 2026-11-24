@@ -733,6 +733,16 @@ function showCatalog(){
  document.getElementById("catalogPage").classList.add("active");
  document.getElementById("homeTab").classList.add("active");
  document.getElementById("accountTab").classList.remove("active");
+
+ requestAnimationFrame(()=>{
+  window.scrollTo(0,catalogScrollY);
+ });
+}
+ document.getElementById("detailPage").classList.remove("active");
+ document.getElementById("profilePage").classList.remove("active");
+ document.getElementById("catalogPage").classList.add("active");
+ document.getElementById("homeTab").classList.add("active");
+ document.getElementById("accountTab").classList.remove("active");
  window.scrollTo(0,0);
 }
 
