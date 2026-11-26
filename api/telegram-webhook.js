@@ -90,18 +90,51 @@ export default async function handler(req, res) {
     return result;
   }
 
+  // Если покупатель заблокировал бота, сервер больше не падает.
   async function notifyBuyer(chatId, message) {
-    await bot("sendMessage", {
-      chat_id: chatId,
-      text: message
-    });
+    try {
+      await bot("sendMessage", {
+        chat_id: chatId,
+        text: message
+      });
+    } catch (error) {
+      console.error("Could not notify buyer:", error.message);
+    }
+  }
+
+  async function answer(callbackId, text, alert = false) {
+    try {
+      await bot("answerCallbackQuery", {
+        callback_query_id: callbackId,
+        text,
+        show_alert: alert
+      });
+    } catch (error) {
+      console.error("answerCallbackQuery error:", error.message);
+    }
+  }
+
+  // Меняет заказ только если он ещё в нужном состоянии.
+  // Возвращает true, если изменение реально произошло.
+  // Двойное нажатие кнопки второй раз ничего не изменит.
+  async function updateIfState(orderId, filter, changes) {
+    const rows = await db(
+      `orders?id=eq.${encodeURIComponent(orderId)}&${filter}`,
+      {
+        method: "PATCH",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify(changes)
+      }
+    );
+
+    return Array.isArray(rows) && rows.length > 0;
   }
 
   try {
     const update = req.body || {};
 
     // Покупатель отправил чек
-    if (update.message?.chat?.type === "private") {
+    if (update.message?.chat?.type === "private" && update.message.from) {
       const message = update.message;
       const telegramId = String(message.from.id);
 
@@ -133,7 +166,7 @@ export default async function handler(req, res) {
         `Заказ: ${shortId}\n` +
         `Telegram ID: ${telegramId}\n` +
         `Сумма заказа: ${order.total_amount} ₽\n\n` +
-        `Проверь поступление денег в Сбербанке.`;
+        `Проверь поступление денег в приложении банка.`;
 
       const keyboard = {
         inline_keyboard: [[
@@ -193,12 +226,7 @@ export default async function handler(req, res) {
     }
 
     if (String(callback.from.id) !== String(TELEGRAM_ADMIN_CHAT_ID)) {
-      await bot("answerCallbackQuery", {
-        callback_query_id: callback.id,
-        text: "Нет доступа",
-        show_alert: true
-      });
-
+      await answer(callback.id, "Нет доступа", true);
       return res.status(200).send("OK");
     }
 
@@ -215,138 +243,104 @@ export default async function handler(req, res) {
     const order = rows[0];
 
     if (!order) {
-      await bot("answerCallbackQuery", {
-        callback_query_id: callback.id,
-        text: "Заказ не найден",
-        show_alert: true
-      });
-
+      await answer(callback.id, "Заказ не найден", true);
       return res.status(200).send("OK");
     }
 
     // Подтверждение оплаты
     if (action === "payment_approve") {
-      if (order.payment_status !== "proof_submitted") {
-        await bot("answerCallbackQuery", {
-          callback_query_id: callback.id,
-          text: "Чек ещё не отправлен или уже обработан",
-          show_alert: true
-        });
+      const changed = await updateIfState(
+        orderId,
+        "payment_status=eq.proof_submitted",
+        { payment_status: "paid" }
+      );
 
+      if (!changed) {
+        await answer(callback.id, "Чек ещё не отправлен или уже обработан", true);
         return res.status(200).send("OK");
       }
-
-      await db(`orders?id=eq.${encodeURIComponent(orderId)}`, {
-        method: "PATCH",
-        headers: { Prefer: "return=minimal" },
-        body: JSON.stringify({
-          payment_status: "paid"
-        })
-      });
 
       await notifyBuyer(
         order.telegram_id,
         "✅ Оплата подтверждена! Твой заказ принят и ожидает сборки."
       );
 
-      await bot("answerCallbackQuery", {
-        callback_query_id: callback.id,
-        text: "Оплата подтверждена"
-      });
+      await answer(callback.id, "Оплата подтверждена");
     }
 
     // Отклонение оплаты
     else if (action === "payment_reject") {
-      if (order.payment_status !== "proof_submitted") {
-        await bot("answerCallbackQuery", {
-          callback_query_id: callback.id,
-          text: "Чек ещё не отправлен или уже обработан",
-          show_alert: true
-        });
+      const changed = await updateIfState(
+        orderId,
+        "payment_status=eq.proof_submitted",
+        { payment_status: "rejected" }
+      );
 
+      if (!changed) {
+        await answer(callback.id, "Чек ещё не отправлен или уже обработан", true);
         return res.status(200).send("OK");
       }
-
-      await db(`orders?id=eq.${encodeURIComponent(orderId)}`, {
-        method: "PATCH",
-        headers: { Prefer: "return=minimal" },
-        body: JSON.stringify({
-          payment_status: "rejected"
-        })
-      });
 
       await notifyBuyer(
         order.telegram_id,
         "❌ Оплата пока не подтверждена. Проверь перевод и отправь чек ещё раз."
       );
 
-      await bot("answerCallbackQuery", {
-        callback_query_id: callback.id,
-        text: "Оплата отклонена"
-      });
+      await answer(callback.id, "Оплата отклонена");
     }
 
     // Подтверждение заказа после оплаты
     else if (action === "order_confirm") {
       if (order.payment_status !== "paid") {
-        await bot("answerCallbackQuery", {
-          callback_query_id: callback.id,
-          text: "Сначала подтверди оплату",
-          show_alert: true
-        });
-
+        await answer(callback.id, "Сначала подтверди оплату", true);
         return res.status(200).send("OK");
       }
 
-      await db(`orders?id=eq.${encodeURIComponent(orderId)}`, {
-        method: "PATCH",
-        headers: { Prefer: "return=minimal" },
-        body: JSON.stringify({
-          status: "processing"
-        })
-      });
+      const changed = await updateIfState(
+        orderId,
+        "payment_status=eq.paid&status=not.in.(processing,delivered,cancelled)",
+        { status: "processing" }
+      );
+
+      if (!changed) {
+        await answer(callback.id, "Заказ уже обработан", true);
+        return res.status(200).send("OK");
+      }
 
       await notifyBuyer(
         order.telegram_id,
         "📦 Твой заказ принят в обработку!"
       );
 
-      await bot("answerCallbackQuery", {
-        callback_query_id: callback.id,
-        text: "Заказ подтверждён"
-      });
+      await answer(callback.id, "Заказ подтверждён");
     }
 
-    // Отмена заказа
+    // Отмена заказа (доставленный или уже отменённый отменить нельзя)
     else if (action === "order_cancel") {
-      await db(`orders?id=eq.${encodeURIComponent(orderId)}`, {
-        method: "PATCH",
-        headers: { Prefer: "return=minimal" },
-        body: JSON.stringify({
-          status: "cancelled"
-        })
-      });
+      const changed = await updateIfState(
+        orderId,
+        "status=not.in.(delivered,cancelled)",
+        { status: "cancelled" }
+      );
+
+      if (!changed) {
+        await answer(callback.id, "Этот заказ уже нельзя отменить", true);
+        return res.status(200).send("OK");
+      }
 
       await notifyBuyer(
         order.telegram_id,
         "Заказ отменён. Если нужна помощь, напиши @RavoPriveManager."
       );
 
-      await bot("answerCallbackQuery", {
-        callback_query_id: callback.id,
-        text: "Заказ отменён"
-      });
+      await answer(callback.id, "Заказ отменён");
     }
 
     // Заказ доставлен и начисление бонусов
+    // (логика оставлена как была, чтобы не сломать начисление бонусов)
     else if (action === "order_done") {
       if (order.status !== "processing" || order.payment_status !== "paid") {
-        await bot("answerCallbackQuery", {
-          callback_query_id: callback.id,
-          text: "Нельзя завершить этот заказ",
-          show_alert: true
-        });
-
+        await answer(callback.id, "Нельзя завершить этот заказ", true);
         return res.status(200).send("OK");
       }
 
@@ -378,16 +372,14 @@ export default async function handler(req, res) {
         "🎉 Заказ доставлен! Спасибо за покупку в RAVO PRIVÉ. Бонусы начислены, если они предусмотрены твоим уровнем."
       );
 
-      await bot("answerCallbackQuery", {
-        callback_query_id: callback.id,
-        text: "Заказ завершён"
-      });
+      await answer(callback.id, "Заказ завершён");
     }
 
     return res.status(200).send("OK");
 
   } catch (error) {
+    // Отвечаем 200, чтобы Telegram не слал одно и то же сообщение снова и снова.
     console.error("Webhook error:", error);
-    return res.status(500).send("Webhook error");
+    return res.status(200).send("OK");
   }
 }
